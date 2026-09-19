@@ -27,6 +27,8 @@ CREATE TABLE IF NOT EXISTS public.users (
     technical_skills TEXT[] DEFAULT '{}',
     bio TEXT DEFAULT '',
     portfolio_link TEXT DEFAULT '',
+    github_url TEXT DEFAULT '',
+    linkedin_url TEXT DEFAULT '',
     contributions_count INTEGER DEFAULT 0,
     teams TEXT[] DEFAULT '{}',
     active_projects TEXT[] DEFAULT '{}',
@@ -34,7 +36,27 @@ CREATE TABLE IF NOT EXISTS public.users (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 2. TASKS TABLE
+-- 2. PROFILES TABLE (Linked with Supabase Auth auth.users.id)
+CREATE TABLE IF NOT EXISTS public.profiles (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    full_name TEXT NOT NULL,
+    profile_photo TEXT,
+    bio TEXT DEFAULT '',
+    research_interests TEXT[] DEFAULT '{}',
+    skills TEXT[] DEFAULT '{}',
+    github_url TEXT DEFAULT '',
+    linkedin_url TEXT DEFAULT '',
+    portfolio_url TEXT DEFAULT '',
+    role_id TEXT DEFAULT 'RISE Club Member',
+    department TEXT DEFAULT 'Integrated B.Tech',
+    year TEXT DEFAULT 'Year 1',
+    prn TEXT UNIQUE,
+    email TEXT UNIQUE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 3. TASKS TABLE
 CREATE TABLE IF NOT EXISTS public.tasks (
     id TEXT PRIMARY KEY DEFAULT ('tsk-' || gen_random_uuid()::text),
     title TEXT NOT NULL,
@@ -52,7 +74,7 @@ CREATE TABLE IF NOT EXISTS public.tasks (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 3. LINK SUBMISSIONS TABLE
+-- 4. LINK SUBMISSIONS TABLE
 CREATE TABLE IF NOT EXISTS public.submissions (
     id TEXT PRIMARY KEY DEFAULT ('sub-' || gen_random_uuid()::text),
     task_id TEXT REFERENCES public.tasks(id) ON DELETE CASCADE,
@@ -67,7 +89,7 @@ CREATE TABLE IF NOT EXISTS public.submissions (
     feedback TEXT
 );
 
--- 4. INTERVIEW APPLICATIONS TABLE
+-- 5. INTERVIEW APPLICATIONS TABLE
 CREATE TABLE IF NOT EXISTS public.applications (
     id TEXT PRIMARY KEY DEFAULT ('app-' || gen_random_uuid()::text),
     name TEXT NOT NULL,
@@ -88,7 +110,7 @@ CREATE TABLE IF NOT EXISTS public.applications (
     applied_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 5. EVENTS TABLE
+-- 6. EVENTS TABLE
 CREATE TABLE IF NOT EXISTS public.events (
     id TEXT PRIMARY KEY DEFAULT ('evt-' || gen_random_uuid()::text),
     title TEXT NOT NULL,
@@ -105,7 +127,7 @@ CREATE TABLE IF NOT EXISTS public.events (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 6. ANNOUNCEMENTS TABLE
+-- 7. ANNOUNCEMENTS TABLE
 CREATE TABLE IF NOT EXISTS public.announcements (
     id TEXT PRIMARY KEY DEFAULT ('ann-' || gen_random_uuid()::text),
     title TEXT NOT NULL,
@@ -119,7 +141,7 @@ CREATE TABLE IF NOT EXISTS public.announcements (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 7. ACTIVITY LOGS TABLE
+-- 8. ACTIVITY LOGS TABLE
 CREATE TABLE IF NOT EXISTS public.activity_logs (
     id TEXT PRIMARY KEY DEFAULT ('log-' || gen_random_uuid()::text),
     action TEXT NOT NULL,
@@ -130,7 +152,7 @@ CREATE TABLE IF NOT EXISTS public.activity_logs (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 8. CERTIFICATES TABLE
+-- 9. CERTIFICATES TABLE
 CREATE TABLE IF NOT EXISTS public.certificates (
     id TEXT PRIMARY KEY DEFAULT ('cert-' || gen_random_uuid()::text),
     certificate_no TEXT UNIQUE NOT NULL,
@@ -144,8 +166,12 @@ CREATE TABLE IF NOT EXISTS public.certificates (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- Enable Row Level Security (RLS)
+-- =========================================================================
+-- ROW LEVEL SECURITY (RLS) POLICIES
+-- =========================================================================
+
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.submissions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.applications ENABLE ROW LEVEL SECURITY;
@@ -154,7 +180,12 @@ ALTER TABLE public.announcements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.activity_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.certificates ENABLE ROW LEVEL SECURITY;
 
--- Public read policies for standard portal operations
+-- Profiles table security: Read all public profiles, update only your own
+CREATE POLICY "Public read profiles" ON public.profiles FOR SELECT USING (true);
+CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY "Users can insert own profile" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
+
+-- Users table policies for backwards compatibility & portal sync
 CREATE POLICY "Public read access for users" ON public.users FOR SELECT USING (true);
 CREATE POLICY "Public insert/update for users" ON public.users FOR ALL USING (true);
 
@@ -178,3 +209,38 @@ CREATE POLICY "Public write access for activity_logs" ON public.activity_logs FO
 
 CREATE POLICY "Public read access for certificates" ON public.certificates FOR SELECT USING (true);
 CREATE POLICY "Public write access for certificates" ON public.certificates FOR ALL USING (true);
+
+-- =========================================================================
+-- SUPABASE STORAGE CONFIGURATION & POLICIES
+-- =========================================================================
+
+-- 1. Create 'profile-photos' bucket if not already created
+INSERT INTO storage.buckets (id, name, public) 
+VALUES ('profile-photos', 'profile-photos', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- 2. Storage security policies:
+-- Anyone can view profile photos (public read)
+CREATE POLICY "Public View Profile Photos" ON storage.objects
+FOR SELECT USING (bucket_id = 'profile-photos');
+
+-- Authenticated users can upload to their own user directory: profiles/{user_id}/*
+CREATE POLICY "Users can upload own profile photo" ON storage.objects
+FOR INSERT WITH CHECK (
+    bucket_id = 'profile-photos' AND 
+    (auth.uid())::text = (storage.foldername(name))[2]
+);
+
+-- Users can update / replace their own profile photo
+CREATE POLICY "Users can update own profile photo" ON storage.objects
+FOR UPDATE USING (
+    bucket_id = 'profile-photos' AND 
+    (auth.uid())::text = (storage.foldername(name))[2]
+);
+
+-- Users can delete only their own profile photo
+CREATE POLICY "Users can delete own profile photo" ON storage.objects
+FOR DELETE USING (
+    bucket_id = 'profile-photos' AND 
+    (auth.uid())::text = (storage.foldername(name))[2]
+);

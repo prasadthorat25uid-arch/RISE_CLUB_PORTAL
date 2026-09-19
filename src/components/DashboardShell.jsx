@@ -1,20 +1,24 @@
 import React, { useState } from 'react';
 import { Sidebar } from './Sidebar';
 import { useAuth } from '../context/AuthContext';
+import { Avatar } from './Avatar';
+import { EditProfileModal } from './EditProfileModal';
 import { 
   Menu, 
   X, 
   Sun, 
   ShieldCheck, 
   Bell, 
-  Sparkles,
-  User,
-  Plus
+  Sparkles, 
+  User, 
+  Plus,
+  Edit3
 } from 'lucide-react';
 
 export const DashboardShell = ({ children, activeTab, setActiveTab }) => {
   const { currentUser, isAuthenticated, permissions, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const getPageTitle = (tab) => {
     switch (tab) {
@@ -39,6 +43,7 @@ export const DashboardShell = ({ children, activeTab, setActiveTab }) => {
       case 'projects': return 'Active Projects & Prototypes';
       case 'events': return 'Society Events & Workshops';
       case 'team': return 'Core Team & Member Roster';
+      case 'members': return 'Core Team & Member Roster';
       case 'achievements': return 'Awards & Verified Credentials';
       case 'login': return 'Authentication Portal';
       default: return 'Research & Innovation Society for Emerging Intelligence';
@@ -97,27 +102,44 @@ export const DashboardShell = ({ children, activeTab, setActiveTab }) => {
           <div className="flex items-center gap-3">
             {isAuthenticated && currentUser ? (
               <div className="flex items-center gap-2.5">
+                
+                {/* Edit Profile Quick Action Button */}
+                <button
+                  onClick={() => setIsEditModalOpen(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-amber-400 hover:text-amber-300 text-xs font-bold transition-all shadow-sm"
+                  title="Edit My Profile"
+                >
+                  <Edit3 className="w-3.5 h-3.5 text-amber-400" />
+                  <span className="hidden sm:inline">Edit Profile</span>
+                </button>
+
                 {permissions?.canCreateMemberProfile && (
                   <button
                     onClick={() => setActiveTab('create-members')}
                     className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold shadow-md transition-all"
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    <span>Create Profile</span>
+                    <span>Create Member</span>
                   </button>
                 )}
 
-                <div className="flex items-center gap-2 pl-2 border-l border-slate-800">
-                  <img 
-                    src={currentUser.photo || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=300&q=80'} 
-                    alt={currentUser.name} 
-                    className="w-8 h-8 rounded-full object-cover border border-amber-400/50" 
+                {/* Profile Pill Clickable -> Opens Profile */}
+                <button
+                  onClick={() => setActiveTab('profile')}
+                  className="flex items-center gap-2 pl-2 border-l border-slate-800 hover:opacity-90 transition-opacity text-left"
+                  title="View Private Profile"
+                >
+                  <Avatar
+                    src={currentUser.photo}
+                    name={currentUser.name}
+                    size="sm"
+                    className="w-8 h-8 rounded-full"
                   />
                   <div className="hidden lg:block text-left">
                     <p className="text-xs font-bold text-white leading-tight">{currentUser.name}</p>
                     <p className="text-[10px] text-amber-400 font-mono">{currentUser.role}</p>
                   </div>
-                </div>
+                </button>
               </div>
             ) : (
               <button
@@ -138,6 +160,15 @@ export const DashboardShell = ({ children, activeTab, setActiveTab }) => {
         </main>
 
       </div>
+
+      {/* Edit Profile Modal accessible globally from Dashboard */}
+      {currentUser && (
+        <EditProfileModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          targetUser={currentUser}
+        />
+      )}
 
     </div>
   );

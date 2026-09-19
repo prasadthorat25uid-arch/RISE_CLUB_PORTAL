@@ -73,8 +73,14 @@ export const PresidentDashboard = ({ setActiveTab }) => {
           {/* Quick Action Button Bar */}
           <div className="flex flex-wrap gap-2.5">
             <button
+              onClick={() => setActiveTab('profile')}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 shadow-lg transition-all"
+            >
+              <span>Edit My Profile</span>
+            </button>
+            <button
               onClick={() => setActiveTab('create-members')}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-lg transition-all"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-amber-300 border border-amber-500/30 shadow-md transition-all"
             >
               <UserPlus className="w-4 h-4" />
               <span>Onboard Member</span>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
+import { Avatar } from './Avatar';
 import { 
   LayoutDashboard, 
   BookOpen, 
@@ -11,9 +12,9 @@ import {
   User, 
   Settings, 
   LogOut, 
-  Sun,
-  ShieldCheck,
-  ChevronRight
+  Sun, 
+  ShieldCheck, 
+  ChevronRight 
 } from 'lucide-react';
 
 export const Sidebar = ({ activeTab, setActiveTab, isOpen, onClose }) => {
@@ -145,14 +146,19 @@ export const Sidebar = ({ activeTab, setActiveTab, isOpen, onClose }) => {
       <div className="p-4 border-t border-slate-800/80 space-y-3">
         {isAuthenticated && currentUser ? (
           <div className="bg-slate-900/90 border border-slate-800 p-3 rounded-2xl space-y-2">
-            <div className="flex items-center gap-3">
-              <img 
-                src={currentUser.photo || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=300&q=80'} 
-                alt={currentUser.name} 
-                className="w-8 h-8 rounded-full object-cover border border-amber-400/50 shrink-0" 
+            <div 
+              onClick={() => handleNavClick('profile')}
+              className="flex items-center gap-3 cursor-pointer group"
+              title="View & Edit Profile"
+            >
+              <Avatar 
+                src={currentUser.photo} 
+                name={currentUser.name} 
+                size="sm"
+                className="w-8 h-8 rounded-full group-hover:scale-105 transition-transform shrink-0" 
               />
               <div className="overflow-hidden">
-                <p className="text-xs font-bold text-white truncate">{currentUser.name}</p>
+                <p className="text-xs font-bold text-white group-hover:text-amber-400 transition-colors truncate">{currentUser.name}</p>
                 <p className="text-[10px] text-amber-400 font-mono truncate">{currentUser.role}</p>
               </div>
             </div>

@@ -372,14 +372,188 @@ export const DataProvider = ({ children }) => {
     return { success: true };
   };
 
-  const updateMemberProfile = (memberId, updatedFields, actor = "User") => {
-    setData(prev => ({
-      ...prev,
-      users: prev.users.map(u => u.id === memberId ? { ...u, ...updatedFields } : u)
-    }));
-    addToast('Profile updated successfully!', 'success');
+  const updateMemberProfile = async (memberId, profileInput, requestingUserId = null) => {
+    const targetUser = data.users.find(u => u.id === memberId);
+    if (!targetUser) {
+      addToast('Error: Member record not found.', 'error');
+      return { success: false, message: 'Member record not found.' };
+    }
 
-    supabase.from('users').update(updatedFields).eq('id', memberId).then(() => {}).catch(() => {});
+    // Authorization check: requester must be the profile owner or an authorized administrator
+    if (requestingUserId && requestingUserId !== memberId) {
+      const requester = data.users.find(u => u.id === requestingUserId);
+      const isAuthAdmin = requester?.role === 'Faculty Coordinator' || requester?.role === 'President';
+      if (!isAuthAdmin) {
+        addToast('Unauthorized: You can only edit your own profile.', 'error');
+        return { success: false, message: 'Unauthorized: You can only edit your own profile.' };
+      }
+    }
+
+    // Full Name validation
+    const rawName = profileInput.name !== undefined 
+      ? profileInput.name 
+      : (profileInput.fullName !== undefined ? profileInput.fullName : targetUser.name);
+    const trimmedName = (rawName || '').trim();
+
+    if (!trimmedName) {
+      addToast('Please enter your full name.', 'error');
+      return { success: false, message: 'Please enter your full name.' };
+    }
+
+    if (trimmedName.length < 2 || trimmedName.length > 70) {
+      addToast('Full name must be between 2 and 70 characters.', 'error');
+      return { success: false, message: 'Full name must be between 2 and 70 characters.' };
+    }
+
+    const oldName = targetUser.name;
+    const isNameChanged = oldName !== trimmedName;
+
+    // Process research interests
+    const researchInterests = Array.isArray(profileInput.researchInterests)
+      ? profileInput.researchInterests
+      : (typeof profileInput.researchInterests === 'string'
+          ? profileInput.researchInterests.split(',').map(s => s.trim()).filter(Boolean)
+          : (targetUser.researchInterests || []));
+
+    // Process technical skills
+    const technicalSkills = Array.isArray(profileInput.technicalSkills)
+      ? profileInput.technicalSkills
+      : (typeof profileInput.technicalSkills === 'string'
+          ? profileInput.technicalSkills.split(',').map(s => s.trim()).filter(Boolean)
+          : (targetUser.technicalSkills || []));
+
+    const updatedUser = {
+      ...targetUser,
+      name: trimmedName,
+      photo: profileInput.photo !== undefined ? profileInput.photo : targetUser.photo,
+      bio: profileInput.bio !== undefined ? profileInput.bio : (targetUser.bio || ''),
+      researchInterests,
+      technicalSkills,
+      githubUrl: profileInput.githubUrl !== undefined ? profileInput.githubUrl : (profileInput.github !== undefined ? profileInput.github : (targetUser.githubUrl || '')),
+      linkedinUrl: profileInput.linkedinUrl !== undefined ? profileInput.linkedinUrl : (profileInput.linkedin !== undefined ? profileInput.linkedin : (targetUser.linkedinUrl || '')),
+      portfolioLink: profileInput.portfolioLink !== undefined ? profileInput.portfolioLink : (profileInput.portfolioUrl !== undefined ? profileInput.portfolioUrl : (targetUser.portfolioLink || '')),
+      phone: profileInput.phone !== undefined ? profileInput.phone : (targetUser.phone || '')
+    };
+
+    // Update global state and cascade name updates throughout the entire system
+    setData(prev => {
+      const updatedUsers = prev.users.map(u => u.id === memberId ? updatedUser : u);
+      let updatedTasks = prev.tasks;
+      let updatedSubmissions = prev.submissions;
+      let updatedProjects = prev.projects;
+      let updatedPublications = prev.publications;
+      let updatedEvents = prev.events;
+      let updatedAchievements = prev.achievements;
+      let updatedAnnouncements = prev.announcements;
+
+      if (isNameChanged) {
+        // Cascade to tasks
+        updatedTasks = (prev.tasks || []).map(t => {
+          let mod = false;
+          let newT = { ...t };
+          if (t.assignedMemberId === memberId || t.assignedMemberName === oldName) {
+            newT.assignedMemberName = trimmedName;
+            mod = true;
+          }
+          if (t.assignedById === memberId || t.assignedByName?.includes(oldName)) {
+            newT.assignedByName = t.assignedByName.replace(oldName, trimmedName);
+            mod = true;
+          }
+          return mod ? newT : t;
+        });
+
+        // Cascade to submissions
+        updatedSubmissions = (prev.submissions || []).map(s => {
+          if (s.memberId === memberId || s.memberName === oldName) {
+            return { ...s, memberName: trimmedName };
+          }
+          return s;
+        });
+
+        // Cascade to projects
+        updatedProjects = (prev.projects || []).map(p => {
+          let newP = { ...p };
+          let mod = false;
+          if (p.studentLeader && p.studentLeader.includes(oldName)) {
+            newP.studentLeader = p.studentLeader.replace(oldName, trimmedName);
+            mod = true;
+          }
+          if (p.facultyMentor && p.facultyMentor.includes(oldName)) {
+            newP.facultyMentor = p.facultyMentor.replace(oldName, trimmedName);
+            mod = true;
+          }
+          return mod ? newP : p;
+        });
+
+        // Cascade to publications
+        updatedPublications = (prev.publications || []).map(pub => {
+          if (pub.authors && pub.authors.includes(oldName)) {
+            return { ...pub, authors: pub.authors.replace(oldName, trimmedName) };
+          }
+          return pub;
+        });
+
+        // Cascade to events
+        updatedEvents = (prev.events || []).map(evt => {
+          let mod = false;
+          let newEvt = { ...evt };
+          if (evt.coordinator && evt.coordinator.includes(oldName)) {
+            newEvt.coordinator = evt.coordinator.replace(oldName, trimmedName);
+            mod = true;
+          }
+          if (evt.organizer && evt.organizer.includes(oldName)) {
+            newEvt.organizer = evt.organizer.replace(oldName, trimmedName);
+            mod = true;
+          }
+          return mod ? newEvt : evt;
+        });
+
+        // Cascade to achievements
+        updatedAchievements = (prev.achievements || []).map(ach => {
+          if (ach.recipientName && ach.recipientName.includes(oldName)) {
+            return { ...ach, recipientName: ach.recipientName.replace(oldName, trimmedName) };
+          }
+          return ach;
+        });
+
+        // Cascade to announcements
+        updatedAnnouncements = (prev.announcements || []).map(ann => {
+          if (ann.author && ann.author.includes(oldName)) {
+            return { ...ann, author: ann.author.replace(oldName, trimmedName) };
+          }
+          return ann;
+        });
+      }
+
+      return {
+        ...prev,
+        users: updatedUsers,
+        tasks: updatedTasks,
+        submissions: updatedSubmissions,
+        projects: updatedProjects,
+        publications: updatedPublications,
+        events: updatedEvents,
+        achievements: updatedAchievements,
+        announcements: updatedAnnouncements
+      };
+    });
+
+    addActivityLog('Profile Updated', trimmedName, 'Personal Profile', `Member profile details and credentials updated.`);
+    addToast('Your profile has been updated successfully.', 'success');
+
+    // Supabase remote DB sync
+    supabase.from('users').update({
+      name: updatedUser.name,
+      photo: updatedUser.photo,
+      bio: updatedUser.bio,
+      research_interests: updatedUser.researchInterests,
+      technical_skills: updatedUser.technicalSkills,
+      portfolio_link: updatedUser.portfolioLink,
+      phone: updatedUser.phone,
+      updated_at: new Date().toISOString()
+    }).eq('id', memberId).then(() => {}).catch(() => {});
+
+    return { success: true, user: updatedUser, message: 'Your profile has been updated successfully.' };
   };
 
   const createTeam = (teamInput, createdBy = "Admin") => {

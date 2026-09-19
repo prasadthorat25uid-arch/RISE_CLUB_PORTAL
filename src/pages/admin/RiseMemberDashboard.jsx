@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
+import { Avatar } from '../../components/Avatar';
+import { EditProfileModal } from '../../components/EditProfileModal';
 import { 
   User, 
   BookOpen, 
@@ -105,10 +107,11 @@ export const RiseMemberDashboard = () => {
       <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-amber-500/40 relative overflow-hidden bg-gradient-to-r from-slate-900 via-amber-950/40 to-slate-900 shadow-2xl">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
-            <img 
-              src={currentUser?.photo || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=300&q=80'} 
-              alt={currentUser?.name} 
-              className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-amber-400/60 shadow-lg" 
+            <Avatar 
+              src={currentUser?.photo} 
+              name={currentUser?.name} 
+              size="2xl" 
+              className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl border-2 border-amber-400/60 shadow-lg shrink-0" 
             />
             <div className="space-y-1">
               <span className="px-3 py-1 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
@@ -125,11 +128,11 @@ export const RiseMemberDashboard = () => {
 
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setIsEditing(!isEditing)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold border border-slate-700 transition-all"
+              onClick={() => setIsEditing(true)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 text-xs font-bold shadow-lg shadow-amber-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
-              <Edit3 className="w-4 h-4 text-amber-400" />
-              <span>{isEditing ? 'Cancel Edit' : 'Edit Profile'}</span>
+              <Edit3 className="w-4 h-4" />
+              <span>Edit Profile</span>
             </button>
             <button
               onClick={() => setPasswordModalOpen(true)}
@@ -485,6 +488,15 @@ export const RiseMemberDashboard = () => {
             </div>
           </form>
         </div>
+      )}
+
+      {/* Edit Profile Modal */}
+      {currentUser && (
+        <EditProfileModal
+          isOpen={isEditing}
+          onClose={() => setIsEditing(false)}
+          targetUser={currentUser}
+        />
       )}
 
     </div>
