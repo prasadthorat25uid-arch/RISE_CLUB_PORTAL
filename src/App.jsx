@@ -28,6 +28,7 @@ import { TaskManagement } from './pages/admin/TaskManagement';
 import { ApplicationsManagement } from './pages/admin/ApplicationsManagement';
 import { CertificatesManagement } from './pages/admin/CertificatesManagement';
 import { AnnouncementsManagement } from './pages/admin/AnnouncementsManagement';
+import { DashboardShell } from './components/DashboardShell';
 
 const AppContent = () => {
   const getTabFromHash = () => {
@@ -53,14 +54,14 @@ const AppContent = () => {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
+  const isPrivateRoute = [
+    'dashboard-faculty', 'dashboard-pres-vp', 'dashboard-member',
+    'manage-members', 'create-members', 'manage-teams', 'manage-tasks',
+    'manage-applications', 'issue-certificates', 'manage-announcements'
+  ].includes(activeTab);
+
   const renderActiveView = () => {
     // Private route guard: Require authentication for dashboards & management portals
-    const isPrivateRoute = [
-      'dashboard-faculty', 'dashboard-pres-vp', 'dashboard-member',
-      'manage-members', 'create-members', 'manage-teams', 'manage-tasks',
-      'manage-applications', 'issue-certificates', 'manage-announcements'
-    ].includes(activeTab);
-
     if (isPrivateRoute && !isAuthenticated) {
       return <LoginPage setActiveTab={setActiveTab} />;
     }
@@ -116,6 +117,18 @@ const AppContent = () => {
         return <Home setActiveTab={setActiveTab} />;
     }
   };
+
+  // Dedicated responsive Dashboard Layout for Authenticated Portals
+  if (isPrivateRoute && isAuthenticated) {
+    return (
+      <DashboardShell activeTab={activeTab} setActiveTab={setActiveTab}>
+        <div className="p-4 sm:p-8">
+          {renderActiveView()}
+        </div>
+        <NotificationToast />
+      </DashboardShell>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 selection:bg-amber-500 selection:text-slate-950">
