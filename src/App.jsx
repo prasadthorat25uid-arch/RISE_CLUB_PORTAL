@@ -45,8 +45,23 @@ import { DashboardShell } from './components/DashboardShell';
 const AppContent = () => {
   const getRouteInfo = () => {
     let hash = window.location.hash.replace(/^#\/?/, '').trim();
+    
+    // Support dashboard/ prefix mapping
     if (hash.startsWith('dashboard/')) {
       hash = hash.replace('dashboard/', 'dashboard-');
+    }
+
+    // Support erp/ prefix mapping directly to dedicated role dashboards
+    if (hash.startsWith('erp/')) {
+      const sub = hash.replace('erp/', '').toLowerCase();
+      if (sub === 'faculty') hash = 'dashboard-faculty';
+      else if (sub === 'president') hash = 'dashboard-president';
+      else if (sub === 'research') hash = 'dashboard-research';
+      else if (sub === 'events') hash = 'dashboard-events';
+      else if (sub === 'publicity' || sub === 'social') hash = 'dashboard-social';
+      else if (sub === 'secretary') hash = 'dashboard-secretary';
+      else if (sub === 'members') hash = 'dashboard-members';
+      else if (sub === 'member') hash = 'dashboard-member';
     }
 
     // Check for member public profile: member/public/:id or member/:id
@@ -95,19 +110,19 @@ const AppContent = () => {
 
   const getDashboardForRole = (r) => {
     switch (r) {
-      case 'Faculty Coordinator': return 'dashboard-faculty';
-      case 'President': return 'dashboard-president';
-      case 'Research Head': return 'dashboard-research';
-      case 'Event Coordinator': return 'dashboard-events';
-      case 'Social Media & Publicity Head': return 'dashboard-social';
-      case 'Secretary': return 'dashboard-secretary';
-      case 'Member Coordinator': return 'dashboard-members';
-      default: return 'dashboard-member';
+      case 'Faculty Coordinator': return 'erp/faculty';
+      case 'President': return 'erp/president';
+      case 'Research Head': return 'erp/research';
+      case 'Event Coordinator': return 'erp/events';
+      case 'Social Media & Publicity Head': return 'erp/publicity';
+      case 'Secretary': return 'erp/secretary';
+      case 'Member Coordinator': return 'erp/members';
+      default: return 'erp/member';
     }
   };
 
   const renderActiveView = () => {
-    // Strict Private route guard: Require confirmed authentication for ERP portals
+    // Strict Private route guard: If unauthenticated, redirect to #/login and render login
     if (isPrivateRoute && (!isAuthenticated || !currentUser)) {
       return <LoginPage setActiveTab={setActiveTab} />;
     }
