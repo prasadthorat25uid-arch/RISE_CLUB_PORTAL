@@ -378,6 +378,8 @@ export const DataProvider = ({ children }) => {
       users: prev.users.map(u => u.id === memberId ? { ...u, ...updatedFields } : u)
     }));
     addToast('Profile updated successfully!', 'success');
+
+    supabase.from('users').update(updatedFields).eq('id', memberId).then(() => {}).catch(() => {});
   };
 
   const createTeam = (teamInput, createdBy = "Admin") => {
@@ -500,6 +502,8 @@ export const DataProvider = ({ children }) => {
     }));
 
     addToast('Application submitted! Move through interview selection process before member account is created.', 'success');
+
+    supabase.from('applications').insert([newApp]).then(() => {}).catch(() => {});
   };
 
   const approveApplication = (appId, actor = "Admin") => {
