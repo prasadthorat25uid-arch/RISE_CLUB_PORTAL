@@ -35,13 +35,23 @@ export const Footer = ({ setActiveTab }) => {
           <div className="space-y-3">
             <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wider">Quick Navigation</h4>
             <ul className="space-y-2 text-xs">
-              {['home', 'about', 'research', 'projects', 'events', 'publications', 'team'].map(tab => (
-                <li key={tab}>
+              {[
+                { id: 'home', label: 'Home' },
+                { id: 'about', label: 'About RISE' },
+                { id: 'research', label: 'Research' },
+                { id: 'projects', label: 'Projects' },
+                { id: 'events', label: 'Events' },
+                { id: 'publications', label: 'Publications' },
+                { id: 'members', label: 'Core Team & Members' },
+                { id: 'achievements', label: 'Achievements' },
+                { id: 'contact', label: 'Contact Us' }
+              ].map(tab => (
+                <li key={tab.id}>
                   <button
-                    onClick={() => setActiveTab(tab)}
-                    className="hover:text-amber-400 capitalize transition-colors"
+                    onClick={() => setActiveTab(tab.id)}
+                    className="hover:text-amber-400 transition-colors"
                   >
-                    {tab === 'about' ? 'About RISE' : tab}
+                    {tab.label}
                   </button>
                 </li>
               ))}

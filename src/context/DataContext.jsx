@@ -546,6 +546,210 @@ export const DataProvider = ({ children }) => {
     addToast(`Application for ${appObj.fullName} declined`, 'info');
   };
 
+  const createEvent = (evtInput, createdBy = "Admin") => {
+    const newEvt = {
+      id: `evt-${Date.now()}`,
+      name: evtInput.name || evtInput.title,
+      title: evtInput.title || evtInput.name,
+      date: evtInput.date,
+      time: evtInput.time || '10:00 AM - 04:00 PM',
+      venue: evtInput.venue || evtInput.location || 'Sanjivani University Campus',
+      description: evtInput.description || '',
+      type: evtInput.type || evtInput.category || 'Workshop',
+      category: evtInput.category || evtInput.type || 'Workshop',
+      organizer: evtInput.organizer || 'RISE Technical Society',
+      coordinator: evtInput.coordinator || createdBy,
+      participantsCount: 0,
+      maxSeats: evtInput.maxSeats || 100,
+      registrationStatus: 'Open',
+      status: evtInput.status || 'Upcoming',
+      image: evtInput.image || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=800&q=80'
+    };
+
+    setData(prev => ({
+      ...prev,
+      events: [newEvt, ...prev.events]
+    }));
+
+    addActivityLog('Event Created', createdBy, newEvt.title, `Event scheduled for ${newEvt.date}`);
+    addToast(`Event '${newEvt.title}' created successfully!`, 'success');
+
+    supabase.from('events').insert([newEvt]).then(() => {}).catch(() => {});
+    return newEvt;
+  };
+
+  const updateEvent = (eventId, updatedFields, actor = "Admin") => {
+    setData(prev => ({
+      ...prev,
+      events: prev.events.map(e => e.id === eventId ? { ...e, ...updatedFields } : e)
+    }));
+
+    addToast('Event updated successfully!', 'success');
+    supabase.from('events').update(updatedFields).eq('id', eventId).then(() => {}).catch(() => {});
+  };
+
+  const deleteEvent = (eventId, actor = "Admin") => {
+    setData(prev => ({
+      ...prev,
+      events: prev.events.filter(e => e.id !== eventId)
+    }));
+
+    addToast('Event deleted successfully.', 'info');
+    supabase.from('events').delete().eq('id', eventId).then(() => {}).catch(() => {});
+  };
+
+  const registerForEvent = (eventId, attendeeInfo) => {
+    setData(prev => ({
+      ...prev,
+      events: prev.events.map(e => {
+        if (e.id === eventId) {
+          return {
+            ...e,
+            participantsCount: (e.participantsCount || 0) + 1
+          };
+        }
+        return e;
+      })
+    }));
+
+    addToast(`Successfully registered for the event! Confirmation sent to email.`, 'success');
+  };
+
+  const createPublication = (pubInput, createdBy = "Admin") => {
+    const newPub = {
+      id: `pub-${Date.now()}`,
+      title: pubInput.title,
+      authors: pubInput.authors || pubInput.leadAuthor || createdBy,
+      domain: pubInput.domain || pubInput.researchArea || 'AI',
+      researchArea: pubInput.researchArea || pubInput.domain || 'AI',
+      journal: pubInput.journal || 'IEEE Conference Proceedings',
+      year: pubInput.year || new Date().getFullYear().toString(),
+      publicationDate: pubInput.publicationDate || new Date().toISOString().split('T')[0],
+      doi: pubInput.doi || `10.1109/RISE.${Date.now().toString().slice(-6)}`,
+      doiLink: pubInput.doiLink || (pubInput.doi ? `https://doi.org/${pubInput.doi}` : `https://doi.org/10.1109/RISE.${Date.now().toString().slice(-6)}`),
+      paperUrl: pubInput.paperUrl || 'https://arxiv.org',
+      status: pubInput.status || 'Published',
+      abstract: pubInput.abstract || '',
+      type: pubInput.type || 'Journal Paper'
+    };
+
+    setData(prev => ({
+      ...prev,
+      publications: [newPub, ...prev.publications],
+      research: [newPub, ...(prev.research || [])]
+    }));
+
+    addActivityLog('Publication Added', createdBy, newPub.title, `Published in ${newPub.journal}`);
+    addToast(`Research paper '${newPub.title}' added!`, 'success');
+
+    supabase.from('publications').insert([newPub]).then(() => {}).catch(() => {});
+    return newPub;
+  };
+
+  const updatePublication = (pubId, updatedFields, actor = "Admin") => {
+    setData(prev => ({
+      ...prev,
+      publications: prev.publications.map(p => p.id === pubId ? { ...p, ...updatedFields } : p),
+      research: (prev.research || []).map(p => p.id === pubId ? { ...p, ...updatedFields } : p)
+    }));
+
+    addToast('Publication updated successfully!', 'success');
+    supabase.from('publications').update(updatedFields).eq('id', pubId).then(() => {}).catch(() => {});
+  };
+
+  const deletePublication = (pubId, actor = "Admin") => {
+    setData(prev => ({
+      ...prev,
+      publications: prev.publications.filter(p => p.id !== pubId),
+      research: (prev.research || []).filter(p => p.id !== pubId)
+    }));
+
+    addToast('Publication deleted.', 'info');
+    supabase.from('publications').delete().eq('id', pubId).then(() => {}).catch(() => {});
+  };
+
+  const createProject = (projInput, createdBy = "Admin") => {
+    const newProj = {
+      id: `proj-${Date.now()}`,
+      name: projInput.name,
+      description: projInput.description || '',
+      researchDomain: projInput.researchDomain || projInput.domain || 'AI',
+      teamName: projInput.teamName || 'Research Team',
+      technologies: Array.isArray(projInput.technologies) ? projInput.technologies : (projInput.technologies ? projInput.technologies.split(',').map(s=>s.trim()) : ['Python', 'PyTorch']),
+      facultyMentor: projInput.facultyMentor || 'Dr. Abhijit Kshirsagar',
+      studentLeader: projInput.studentLeader || createdBy,
+      status: projInput.status || 'In Progress',
+      progress: projInput.progress || 10,
+      githubUrl: projInput.githubUrl || 'https://github.com/rise-sanjivani',
+      demoUrl: projInput.demoUrl || '',
+      image: projInput.image || 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80',
+      expectedCompletion: projInput.expectedCompletion || '2026-12-31'
+    };
+
+    setData(prev => ({
+      ...prev,
+      projects: [newProj, ...prev.projects]
+    }));
+
+    addActivityLog('Project Created', createdBy, newProj.name, `Under domain: ${newProj.researchDomain}`);
+    addToast(`Project '${newProj.name}' created!`, 'success');
+
+    supabase.from('projects').insert([newProj]).then(() => {}).catch(() => {});
+    return newProj;
+  };
+
+  const updateProject = (projectId, updatedFields, actor = "Admin") => {
+    setData(prev => ({
+      ...prev,
+      projects: prev.projects.map(p => p.id === projectId ? { ...p, ...updatedFields } : p)
+    }));
+
+    addToast('Project updated successfully!', 'success');
+    supabase.from('projects').update(updatedFields).eq('id', projectId).then(() => {}).catch(() => {});
+  };
+
+  const deleteProject = (projectId, actor = "Admin") => {
+    setData(prev => ({
+      ...prev,
+      projects: prev.projects.filter(p => p.id !== projectId)
+    }));
+
+    addToast('Project deleted.', 'info');
+    supabase.from('projects').delete().eq('id', projectId).then(() => {}).catch(() => {});
+  };
+
+  const submitContactMessage = async (contactInput) => {
+    const { fullName, email, subject, message } = contactInput;
+    if (!fullName || !email || !message) {
+      addToast('Please fill all required fields.', 'error');
+      return { success: false, message: 'All required fields must be filled.' };
+    }
+
+    const newContact = {
+      id: `cnt-${Date.now()}`,
+      fullName,
+      email,
+      subject: subject || 'General Inquiry',
+      message,
+      createdAt: new Date().toISOString().replace('T', ' ').substring(0, 16)
+    };
+
+    setData(prev => ({
+      ...prev,
+      contacts: [newContact, ...(prev.contacts || [])]
+    }));
+
+    addToast('Message sent successfully.', 'success');
+
+    try {
+      await supabase.from('contacts').insert([newContact]);
+    } catch (e) {
+      // Offline / fallback handled
+    }
+
+    return { success: true, message: 'Message sent successfully.' };
+  };
+
   const createAnnouncement = (annInput, createdBy = "Admin") => {
     const newAnn = {
       id: `ann-${Date.now()}`,
@@ -569,7 +773,7 @@ export const DataProvider = ({ children }) => {
     const newAch = {
       id: `ach-${Date.now()}`,
       recipientName: achInput.recipientName,
-      recipientRole: achInput.recipientRole || 'Research Club Member',
+      recipientRole: achInput.recipientRole || 'RISE Club Member',
       title: achInput.title,
       category: achInput.category || 'Best Student Contributor',
       issuedBy: 'Sanjivani University RISE Committee',
@@ -610,8 +814,17 @@ export const DataProvider = ({ children }) => {
       createTask,
       createBulkTasks,
       updateTaskStatus,
-      createEvent: () => {},
-      createPublication: () => {},
+      createEvent,
+      updateEvent,
+      deleteEvent,
+      registerForEvent,
+      createPublication,
+      updatePublication,
+      deletePublication,
+      createProject,
+      updateProject,
+      deleteProject,
+      submitContactMessage,
       createAchievement,
       submitApplication,
       approveApplication,

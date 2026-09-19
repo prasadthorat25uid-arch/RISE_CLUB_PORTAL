@@ -37,8 +37,9 @@ export const Navbar = ({ activeTab, setActiveTab }) => {
     { id: 'projects', label: 'Projects' },
     { id: 'events', label: 'Events' },
     { id: 'publications', label: 'Publications' },
-    { id: 'team', label: 'Core Team & Members' },
+    { id: 'members', label: 'Members' },
     { id: 'achievements', label: 'Achievements' },
+    { id: 'contact', label: 'Contact' },
     { id: 'join', label: 'Join RISE', highlight: true }
   ];
 

@@ -14,6 +14,7 @@ import { EventsPage } from './pages/public/EventsPage';
 import { PublicationsPage } from './pages/public/PublicationsPage';
 import { TeamPage } from './pages/public/TeamPage';
 import { AchievementsPage } from './pages/public/AchievementsPage';
+import { ContactPage } from './pages/public/ContactPage';
 import { JoinRisePage } from './pages/public/JoinRisePage';
 import { LoginPage } from './pages/public/LoginPage';
 
@@ -97,10 +98,13 @@ const AppContent = () => {
         return <EventsPage />;
       case 'publications':
         return <PublicationsPage />;
+      case 'members':
       case 'team':
         return <TeamPage />;
       case 'achievements':
         return <AchievementsPage />;
+      case 'contact':
+        return <ContactPage />;
       case 'join':
         return <JoinRisePage setActiveTab={setActiveTab} />;
       case 'login':

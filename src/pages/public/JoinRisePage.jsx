@@ -97,7 +97,7 @@ export const JoinRisePage = ({ setActiveTab }) => {
           </div>
         </div>
         <p className="text-[11px] text-center text-slate-400">
-          * Note: Member profiles & login accounts are provisioned exclusively by the <strong>Faculty Coordinator</strong>, <strong>President</strong>, and <strong>Vice President</strong>.
+          * Note: Member profiles & login accounts are provisioned exclusively by the <strong>Faculty Coordinator</strong> and <strong>President</strong>.
         </p>
       </div>
 
