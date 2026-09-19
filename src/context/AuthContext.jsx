@@ -6,7 +6,11 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const { data, addToast } = useData();
 
-  // Default active user: Faculty Coordinator Dr. Abhijit Kshirsagar
+  // Authentication session state
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem('rise_is_authenticated') === 'true';
+  });
+
   const [currentUserId, setCurrentUserId] = useState(() => {
     return localStorage.getItem('rise_active_user_id') || 'usr-fac-1';
   });
@@ -15,10 +19,12 @@ export const AuthProvider = ({ children }) => {
 
   const switchUserRole = (userId) => {
     setCurrentUserId(userId);
+    setIsAuthenticated(true);
     localStorage.setItem('rise_active_user_id', userId);
+    localStorage.setItem('rise_is_authenticated', 'true');
   };
 
-  // Login authentication with unique PRN + Password
+  // Login authentication using unique PRN + Password
   const loginWithPRN = (inputPRN, plainPassword) => {
     const foundUser = data.users.find(u => u.prn?.toLowerCase() === inputPRN?.toLowerCase());
     
@@ -32,10 +38,19 @@ export const AuthProvider = ({ children }) => {
       return { success: false, message: `Account is ${foundUser.status}` };
     }
 
-    // Authenticate user & set current active user session
-    switchUserRole(foundUser.id);
+    setCurrentUserId(foundUser.id);
+    setIsAuthenticated(true);
+    localStorage.setItem('rise_active_user_id', foundUser.id);
+    localStorage.setItem('rise_is_authenticated', 'true');
+
     addToast(`Welcome back, ${foundUser.name}! Logged in successfully.`, 'success');
     return { success: true, user: foundUser };
+  };
+
+  const logout = () => {
+    setIsAuthenticated(false);
+    localStorage.removeItem('rise_is_authenticated');
+    addToast('Logged out successfully.', 'info');
   };
 
   const role = currentUser?.role || 'Research Club Member';
@@ -44,12 +59,11 @@ export const AuthProvider = ({ children }) => {
     isFaculty: role === 'Faculty Coordinator',
     isPresident: role === 'President',
     isVicePresident: role === 'Vice President',
-    // Rule: President (Ayushi Ahire) and Vice President (Prasad Thorat) have equal student leadership authority!
     isEqualLeadership: role === 'President' || role === 'Vice President',
     isStudentLead: ['Research Head', 'Secretary + Event Coordinator', 'Social Media & Publicity Head', 'Member Coordinator'].includes(role),
     isMember: role === 'Research Club Member',
 
-    // Functional capabilities
+    // Role-based functional capabilities
     canManageMembers: role === 'Faculty Coordinator' || role === 'President' || role === 'Vice President',
     canBulkCreateMembers: role === 'Faculty Coordinator' || role === 'President' || role === 'Vice President',
     canResetPasswords: role === 'Faculty Coordinator' || role === 'President' || role === 'Vice President',
@@ -61,7 +75,6 @@ export const AuthProvider = ({ children }) => {
     canIssueCertificates: role === 'Faculty Coordinator' || role === 'President' || role === 'Vice President'
   };
 
-  // Strip passwordHash from public user references
   const safeUser = currentUser ? {
     id: currentUser.id,
     memberId: currentUser.memberId,
@@ -86,8 +99,10 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider value={{
       currentUser: safeUser,
       currentUserId,
+      isAuthenticated,
       switchUserRole,
       loginWithPRN,
+      logout,
       permissions
     }}>
       {children}

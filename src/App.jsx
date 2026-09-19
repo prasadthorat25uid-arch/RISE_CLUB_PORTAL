@@ -15,6 +15,7 @@ import { PublicationsPage } from './pages/public/PublicationsPage';
 import { TeamPage } from './pages/public/TeamPage';
 import { AchievementsPage } from './pages/public/AchievementsPage';
 import { JoinRisePage } from './pages/public/JoinRisePage';
+import { LoginPage } from './pages/public/LoginPage';
 
 // Admin & Role Dashboards
 import { FacultyDashboard } from './pages/admin/FacultyDashboard';
@@ -30,8 +31,20 @@ import { AnnouncementsManagement } from './pages/admin/AnnouncementsManagement';
 
 const AppContent = () => {
   const [activeTab, setActiveTab] = useState('home');
+  const { isAuthenticated, permissions } = useAuth();
 
   const renderActiveView = () => {
+    // Private route guard: Require authentication for dashboards & management portals
+    const isPrivateRoute = [
+      'dashboard-faculty', 'dashboard-pres-vp', 'dashboard-member',
+      'manage-members', 'create-members', 'manage-teams', 'manage-tasks',
+      'manage-applications', 'issue-certificates', 'manage-announcements'
+    ].includes(activeTab);
+
+    if (isPrivateRoute && !isAuthenticated) {
+      return <LoginPage setActiveTab={setActiveTab} />;
+    }
+
     switch (activeTab) {
       // Public Pages
       case 'home':
@@ -52,8 +65,10 @@ const AppContent = () => {
         return <AchievementsPage />;
       case 'join':
         return <JoinRisePage setActiveTab={setActiveTab} />;
+      case 'login':
+        return <LoginPage setActiveTab={setActiveTab} />;
 
-      // Dashboards
+      // Private Role Portals (Guarded)
       case 'dashboard-faculty':
         return <FacultyDashboard setActiveTab={setActiveTab} />;
       case 'dashboard-pres-vp':
@@ -61,7 +76,7 @@ const AppContent = () => {
       case 'dashboard-member':
         return <MemberDashboard />;
 
-      // Admin Management Pages
+      // Private Management Pages (Guarded)
       case 'manage-members':
         return <MemberManagement setActiveTab={setActiveTab} />;
       case 'create-members':
