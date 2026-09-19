@@ -30,8 +30,28 @@ import { CertificatesManagement } from './pages/admin/CertificatesManagement';
 import { AnnouncementsManagement } from './pages/admin/AnnouncementsManagement';
 
 const AppContent = () => {
-  const [activeTab, setActiveTab] = useState('home');
+  const getTabFromHash = () => {
+    const hash = window.location.hash.replace(/^#\/?/, '').trim();
+    return hash || 'home';
+  };
+
+  const [activeTab, setActiveTabState] = useState(() => getTabFromHash());
   const { isAuthenticated, permissions } = useAuth();
+
+  const setActiveTab = (tab) => {
+    window.location.hash = `#/${tab}`;
+    setActiveTabState(tab);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  React.useEffect(() => {
+    const handleHashChange = () => {
+      const tab = getTabFromHash();
+      setActiveTabState(tab);
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   const renderActiveView = () => {
     // Private route guard: Require authentication for dashboards & management portals
