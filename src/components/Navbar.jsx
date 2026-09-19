@@ -123,7 +123,7 @@ export const Navbar = ({ activeTab, setActiveTab }) => {
                   </span>
                 </button>
 
-                {/* Role Switcher Dropdown */}
+                {/* Authenticated User Menu Dropdown */}
                 <div className="relative">
                   <button
                     onClick={() => setRoleDropdownOpen(!roleDropdownOpen)}
@@ -143,53 +143,66 @@ export const Navbar = ({ activeTab, setActiveTab }) => {
                   </button>
 
                   {roleDropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-72 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-2 z-50 animate-fadeIn">
-                      <div className="px-3 py-2 border-b border-slate-800 mb-1 flex items-center justify-between">
-                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Switch Persona / Role</span>
+                    <div className="absolute right-0 mt-2 w-72 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-3 z-50 animate-fadeIn space-y-2">
+                      <div className="px-2 py-1.5 border-b border-slate-800">
+                        <p className="text-xs font-bold text-white truncate">{currentUser?.name}</p>
+                        <p className="text-[10px] text-amber-400 font-mono">{currentUser?.role}</p>
+                        <p className="text-[10px] text-slate-400 font-mono truncate">{currentUser?.email}</p>
+                        <p className="text-[10px] text-slate-500 font-mono">PRN: {currentUser?.prn}</p>
+                      </div>
+
+                      <div className="space-y-1">
                         <button
                           onClick={() => {
                             setActiveTab('profile');
                             setRoleDropdownOpen(false);
                           }}
-                          className="text-[10px] text-amber-400 hover:text-amber-300 font-bold"
+                          className="w-full flex items-center gap-2 p-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition-all text-left"
                         >
-                          My Profile →
+                          <User className="w-3.5 h-3.5 text-amber-400" />
+                          <span>My Private Profile</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            setActiveTab('tasks');
+                            setRoleDropdownOpen(false);
+                          }}
+                          className="w-full flex items-center gap-2 p-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition-all text-left"
+                        >
+                          <FileText className="w-3.5 h-3.5 text-amber-400" />
+                          <span>My Tasks & Deliverables</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            setActiveTab('notifications');
+                            setRoleDropdownOpen(false);
+                          }}
+                          className="w-full flex items-center gap-2 p-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition-all text-left"
+                        >
+                          <Bell className="w-3.5 h-3.5 text-amber-400" />
+                          <span>Society Notifications</span>
                         </button>
                       </div>
-                      <div className="max-h-64 overflow-y-auto space-y-1">
-                        {allRolesList.map(u => (
-                          <button
-                            key={u.id}
-                            onClick={() => {
-                              switchUserRole(u.id);
-                              setRoleDropdownOpen(false);
-                            }}
-                            className={`w-full flex items-center justify-between p-2 rounded-xl text-left transition-all ${
-                              u.id === currentUser?.id
-                                ? 'bg-amber-500/15 border border-amber-500/30'
-                                : 'hover:bg-slate-800/80'
-                            }`}
-                          >
-                            <div className="flex items-center gap-2.5">
-                              <Avatar 
-                                src={u.photo} 
-                                name={u.name} 
-                                size="xs" 
-                                className="w-6 h-6 rounded-full shrink-0" 
-                              />
-                              <div>
-                                <div className="text-xs font-semibold text-white">{u.name}</div>
-                                <div className="text-[10px] text-amber-400 font-medium">{u.role}</div>
-                              </div>
-                            </div>
-                          </button>
-                        ))}
+
+                      <div className="pt-2 border-t border-slate-800">
+                        <button
+                          onClick={() => {
+                            setRoleDropdownOpen(false);
+                            logout();
+                          }}
+                          className="w-full flex items-center justify-center gap-2 p-2 rounded-xl text-xs font-bold bg-rose-950/80 hover:bg-rose-900 text-rose-300 transition-all"
+                        >
+                          <LogOut className="w-3.5 h-3.5" />
+                          <span>Sign Out</span>
+                        </button>
                       </div>
                     </div>
                   )}
                 </div>
 
-                {/* Logout Button */}
+                {/* Direct Logout Button */}
                 <button
                   onClick={logout}
                   className="p-2 rounded-xl bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800/40"

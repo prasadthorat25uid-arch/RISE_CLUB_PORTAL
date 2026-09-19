@@ -7,18 +7,18 @@ import {
   ArrowRight, 
   ShieldAlert, 
   CheckCircle2, 
-  UserCheck, 
   ShieldCheck,
   Eye,
   EyeOff,
-  Sun,
   Loader2,
-  HelpCircle
+  HelpCircle,
+  Mail,
+  FileBadge
 } from 'lucide-react';
 
 export const LoginPage = ({ setActiveTab }) => {
-  const { loginWithPRN, isAuthenticated, currentUser, logout } = useAuth();
-  const { data, addToast } = useData();
+  const { login, isAuthenticated, currentUser, logout } = useAuth();
+  const { data } = useData();
 
   const [credentialInput, setCredentialInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
@@ -41,48 +41,37 @@ export const LoginPage = ({ setActiveTab }) => {
     }
   };
 
-  const handleLoginSubmit = (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
-    setIsLoading(true);
 
-    if (!credentialInput || !passwordInput) {
-      setErrorMsg("Please enter your Student PRN or Email and Password.");
-      setIsLoading(false);
+    // Strict validation: Both fields required
+    if (!credentialInput.trim() || !passwordInput.trim()) {
+      setErrorMsg("Please enter your Email/PRN and Password.");
       return;
     }
 
-    setTimeout(() => {
-      const result = loginWithPRN(credentialInput, passwordInput);
+    setIsLoading(true);
+
+    try {
+      const result = await login(credentialInput, passwordInput);
       setIsLoading(false);
 
-      if (result.success) {
+      if (result.success && result.user) {
         const targetDashboard = getDashboardForRole(result.user.role);
         setActiveTab(targetDashboard);
       } else {
-        setErrorMsg(result.message || "Invalid PRN/Email or Password.");
+        setErrorMsg(result.message || "Invalid Email/PRN or Password.");
       }
-    }, 600);
+    } catch (err) {
+      setIsLoading(false);
+      setErrorMsg("Invalid Email/PRN or Password.");
+    }
   };
 
-  const handleQuickRoleSelect = (userObj) => {
+  const handleFillTestIdentifier = (userObj) => {
     setCredentialInput(userObj.prn);
-    const pass = userObj.role === 'Faculty Coordinator' ? 'Faculty@2026' : 
-                 userObj.role === 'President' ? 'Ayushi@2026' : 
-                 userObj.role === 'Research Head' ? 'Shweta@2026' :
-                 userObj.role === 'Event Coordinator' ? 'Sairaj@2026' :
-                 userObj.role === 'Secretary' ? 'Sanskar@2026' :
-                 userObj.role === 'Member Coordinator' ? 'Vaishnavi@2026' : 'Rohan@2026';
-    setPasswordInput(pass);
-    
-    setIsLoading(true);
-    setTimeout(() => {
-      const result = loginWithPRN(userObj.prn, pass);
-      setIsLoading(false);
-      if (result.success) {
-        setActiveTab(getDashboardForRole(userObj.role));
-      }
-    }, 400);
+    setErrorMsg('');
   };
 
   if (isAuthenticated && currentUser) {
@@ -134,7 +123,7 @@ export const LoginPage = ({ setActiveTab }) => {
           <img src="/rise-logo.png" alt="RISE Logo" className="w-16 h-16 object-contain rounded-2xl border border-amber-500/40 shadow-xl" />
           <div className="text-left">
             <h1 className="text-2xl sm:text-4xl font-black text-white font-outfit tracking-wide">
-              RISE <span className="gradient-text-sun">PORTAL</span>
+              RISE <span className="gradient-text-sun">ERP PORTAL</span>
             </h1>
             <p className="text-[11px] text-amber-400 font-semibold tracking-widest uppercase">
               Research & Innovation Society for Emerging Intelligence
@@ -143,7 +132,7 @@ export const LoginPage = ({ setActiveTab }) => {
           </div>
         </div>
         <p className="text-xs sm:text-sm text-slate-400 max-w-lg mx-auto">
-          Secure Role-Based Authentication Gateway for Faculty, Core Officers & Club Members
+          Strict Authentication Gateway for Faculty, Core Officers & Club Members
         </p>
       </div>
 
@@ -154,39 +143,42 @@ export const LoginPage = ({ setActiveTab }) => {
           <div className="border-b border-slate-800 pb-3 flex items-center justify-between">
             <div className="flex items-center gap-2 text-white font-bold font-outfit">
               <KeyRound className="w-5 h-5 text-amber-400" />
-              <span>Officer & Member Authentication</span>
+              <span>ERP Member Authentication</span>
             </div>
             <span className="text-[10px] text-slate-400 font-mono">2026-2027</span>
           </div>
 
           {errorMsg && (
-            <div className="p-3 rounded-xl bg-rose-950/80 border border-rose-700/60 text-xs text-rose-200 flex items-center gap-2">
+            <div className="p-3 rounded-xl bg-rose-950/80 border border-rose-700/60 text-xs text-rose-200 flex items-center gap-2 animate-fadeIn">
               <ShieldAlert className="w-4 h-4 text-rose-400 shrink-0" />
               <span>{errorMsg}</span>
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">Student PRN or Email Address *</label>
-            <input
-              type="text"
-              required
-              placeholder="e.g. PRN2026001 or ayushi.ahire@sanjivani.edu.in"
-              value={credentialInput}
-              onChange={e => setCredentialInput(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white font-mono focus:border-amber-500 focus:outline-none"
-            />
+            <label className="block text-xs font-medium text-slate-300 mb-1">Email / PRN *</label>
+            <div className="relative">
+              <input
+                type="text"
+                required
+                placeholder="Registered Email or Student PRN"
+                value={credentialInput}
+                onChange={e => setCredentialInput(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white font-mono focus:border-amber-500 focus:outline-none"
+              />
+            </div>
+            <p className="text-[10px] text-slate-500 mt-1">Accepts registered Email (e.g. ayushi.ahire@sanjivani.edu.in) or PRN (e.g. PRN2026001)</p>
           </div>
 
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="block text-xs font-medium text-slate-300">Private Account Password *</label>
+              <label className="block text-xs font-medium text-slate-300">Password *</label>
               <button
                 type="button"
                 onClick={() => setForgotModalOpen(true)}
-                className="text-[11px] text-amber-400 hover:text-amber-300"
+                className="text-[11px] text-amber-400 hover:text-amber-300 font-semibold"
               >
-                Forgot password?
+                FORGOT PASSWORD
               </button>
             </div>
             
@@ -194,7 +186,7 @@ export const LoginPage = ({ setActiveTab }) => {
               <input
                 type={showPassword ? 'text' : 'password'}
                 required
-                placeholder="••••••••••••"
+                placeholder="Account Password"
                 value={passwordInput}
                 onChange={e => setPasswordInput(e.target.value)}
                 className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-4 pr-10 py-2.5 text-xs text-white font-mono focus:border-amber-500 focus:outline-none"
@@ -233,42 +225,45 @@ export const LoginPage = ({ setActiveTab }) => {
               </>
             ) : (
               <>
-                <span>Sign In & Open My Dashboard</span>
+                <span>LOGIN</span>
                 <ArrowRight className="w-4 h-4" />
               </>
             )}
           </button>
 
           <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800 text-[11px] text-slate-400 space-y-1 text-center">
-            <p className="text-amber-300 font-bold">🔒 Strict Role-Based Redirection</p>
-            <p>Your authenticated session automatically opens your dedicated executive or member dashboard.</p>
+            <p className="text-amber-300 font-bold">🔒 Strict Authentication Enforced</p>
+            <p>Access to private ERP dashboards requires registered Email/PRN and verified password.</p>
           </div>
         </form>
 
-        {/* Quick Role Tester Panel */}
+        {/* Approved Registered Member Reference */}
         <div className="glass-panel p-6 rounded-3xl space-y-4 border border-slate-800">
           <div className="border-b border-slate-800 pb-3">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider">Quick Role Test Accounts</h3>
-            <p className="text-xs text-slate-400 mt-0.5">Click any official role to auto-populate and log in</p>
+            <h3 className="text-sm font-bold text-white uppercase tracking-wider">Registered Accounts Reference</h3>
+            <p className="text-xs text-slate-400 mt-0.5">Click any account to populate Email/PRN into the login form</p>
           </div>
 
           <div className="space-y-2 max-h-[380px] overflow-y-auto pr-1">
             {data.users.map(u => (
-              <button
+              <div
                 key={u.id}
-                type="button"
-                onClick={() => handleQuickRoleSelect(u)}
-                className="w-full p-3 rounded-2xl bg-slate-900 border border-slate-800 hover:border-amber-500/50 flex items-center justify-between text-left transition-all group"
+                onClick={() => handleFillTestIdentifier(u)}
+                className="w-full p-3 rounded-2xl bg-slate-900 border border-slate-800 hover:border-amber-500/50 flex items-center justify-between text-left transition-all cursor-pointer group"
               >
                 <div className="flex items-center gap-3">
                   <img src={u.photo} alt={u.name} className="w-8 h-8 rounded-full object-cover border border-amber-400/40 shrink-0" />
                   <div>
                     <div className="text-xs font-bold text-white group-hover:text-amber-400 transition-colors">{u.name}</div>
                     <div className="text-[10px] text-amber-300/90 font-mono font-semibold">{u.role}</div>
+                    <div className="text-[10px] text-slate-400 font-mono">{u.email}</div>
                   </div>
                 </div>
-                <span className="text-[10px] text-slate-500 font-mono group-hover:text-amber-400">{u.prn}</span>
-              </button>
+                <div className="text-right">
+                  <span className="text-[10px] text-amber-400 font-mono block font-bold">{u.prn}</span>
+                  <span className="text-[9px] text-slate-500 group-hover:text-amber-300">Fill PRN →</span>
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -286,8 +281,9 @@ export const LoginPage = ({ setActiveTab }) => {
             <p className="text-xs text-slate-300 leading-relaxed">
               For security and confidentiality, member account passwords can only be reset by the <strong>Faculty Coordinator</strong> or <strong>President</strong> through the Member Management administrative console.
             </p>
-            <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 text-[11px] text-slate-400">
-              Contact: <span className="text-amber-400 font-mono">faculty.rise@sanjivani.edu.in</span> or <span className="text-amber-400 font-mono">ayushi.ahire@sanjivani.edu.in</span>
+            <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 text-[11px] text-slate-400 space-y-1">
+              <div>Faculty: <span className="text-amber-400 font-mono">faculty.rise@sanjivani.edu.in</span></div>
+              <div>President: <span className="text-amber-400 font-mono">ayushi.ahire@sanjivani.edu.in</span></div>
             </div>
             <div className="text-right pt-2">
               <button

@@ -87,14 +87,28 @@ const AppContent = () => {
     'dashboard-faculty', 'dashboard-president', 'dashboard-research',
     'dashboard-events', 'dashboard-social', 'dashboard-secretary',
     'dashboard-members', 'dashboard-member', 'dashboard-pres-vp',
+    'dashboard', 'erp',
     'profile', 'notifications', 'tasks',
     'manage-members', 'create-members', 'manage-teams', 'manage-tasks',
     'manage-applications', 'issue-certificates', 'manage-announcements'
   ].includes(activeTab);
 
+  const getDashboardForRole = (r) => {
+    switch (r) {
+      case 'Faculty Coordinator': return 'dashboard-faculty';
+      case 'President': return 'dashboard-president';
+      case 'Research Head': return 'dashboard-research';
+      case 'Event Coordinator': return 'dashboard-events';
+      case 'Social Media & Publicity Head': return 'dashboard-social';
+      case 'Secretary': return 'dashboard-secretary';
+      case 'Member Coordinator': return 'dashboard-members';
+      default: return 'dashboard-member';
+    }
+  };
+
   const renderActiveView = () => {
-    // Private route guard: Require authentication for dashboards & management portals
-    if (isPrivateRoute && !isAuthenticated) {
+    // Strict Private route guard: Require confirmed authentication for ERP portals
+    if (isPrivateRoute && (!isAuthenticated || !currentUser)) {
       return <LoginPage setActiveTab={setActiveTab} />;
     }
 
@@ -137,6 +151,10 @@ const AppContent = () => {
         return <NotificationsPage setActiveTab={setActiveTab} />;
       case 'tasks':
         return <TasksPage setActiveTab={setActiveTab} />;
+      case 'dashboard':
+      case 'erp':
+        const targetDash = getDashboardForRole(role);
+        return <RiseMemberDashboard setActiveTab={setActiveTab} />;
 
       // Dedicated Role Portals (Guarded)
       case 'dashboard-faculty':
