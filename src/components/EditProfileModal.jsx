@@ -20,7 +20,9 @@ import {
   AlertCircle, 
   Sparkles,
   Loader2,
-  Camera
+  Camera,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 
 export const EditProfileModal = ({ isOpen, onClose, targetUser = null }) => {
@@ -43,7 +45,17 @@ export const EditProfileModal = ({ isOpen, onClose, targetUser = null }) => {
     githubUrl: user?.githubUrl || user?.github || '',
     linkedinUrl: user?.linkedinUrl || user?.linkedin || '',
     portfolioLink: user?.portfolioLink || user?.portfolioUrl || '',
-    phone: user?.phone || ''
+    phone: user?.phone || '',
+    // Public profile visibility settings
+    showResearch: user?.showResearch !== false,
+    showProjects: user?.showProjects !== false,
+    showPublications: user?.showPublications !== false,
+    showEvents: user?.showEvents !== false,
+    showAchievements: user?.showAchievements !== false,
+    showSkills: user?.showSkills !== false,
+    showResearchInterests: user?.showResearchInterests !== false,
+    showDepartment: user?.showDepartment !== false,
+    showAcademicYear: user?.showAcademicYear !== false
   });
 
   const [selectedFile, setSelectedFile] = useState(null);
@@ -69,7 +81,16 @@ export const EditProfileModal = ({ isOpen, onClose, targetUser = null }) => {
         githubUrl: user.githubUrl || user.github || '',
         linkedinUrl: user.linkedinUrl || user.linkedin || '',
         portfolioLink: user.portfolioLink || user.portfolioUrl || '',
-        phone: user.phone || ''
+        phone: user.phone || '',
+        showResearch: user.showResearch !== false,
+        showProjects: user.showProjects !== false,
+        showPublications: user.showPublications !== false,
+        showEvents: user.showEvents !== false,
+        showAchievements: user.showAchievements !== false,
+        showSkills: user.showSkills !== false,
+        showResearchInterests: user.showResearchInterests !== false,
+        showDepartment: user.showDepartment !== false,
+        showAcademicYear: user.showAcademicYear !== false
       });
       setPhotoPreview(user.photo || '');
       setSelectedFile(null);
@@ -110,6 +131,11 @@ export const EditProfileModal = ({ isOpen, onClose, targetUser = null }) => {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+  };
+
+  // Toggle visibility setting helper
+  const toggleSetting = (key) => {
+    setFormData(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
   // Form submission & Save
@@ -165,7 +191,16 @@ export const EditProfileModal = ({ isOpen, onClose, targetUser = null }) => {
       githubUrl: formData.githubUrl,
       linkedinUrl: formData.linkedinUrl,
       portfolioLink: formData.portfolioLink,
-      phone: formData.phone
+      phone: formData.phone,
+      showResearch: formData.showResearch,
+      showProjects: formData.showProjects,
+      showPublications: formData.showPublications,
+      showEvents: formData.showEvents,
+      showAchievements: formData.showAchievements,
+      showSkills: formData.showSkills,
+      showResearchInterests: formData.showResearchInterests,
+      showDepartment: formData.showDepartment,
+      showAcademicYear: formData.showAcademicYear
     }, currentUser?.id);
 
     setIsSaving(false);
@@ -192,7 +227,7 @@ export const EditProfileModal = ({ isOpen, onClose, targetUser = null }) => {
           <div className="space-y-1">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] font-bold">
               <Sparkles className="w-3 h-3" />
-              <span>Personal Account Settings</span>
+              <span>Personal Account & Public Portfolio</span>
             </div>
             <h2 className="text-xl sm:text-2xl font-black text-white font-outfit">
               Edit Member Profile
@@ -357,11 +392,11 @@ export const EditProfileModal = ({ isOpen, onClose, targetUser = null }) => {
           <div className="space-y-4">
             <div>
               <label className="block text-xs font-bold text-slate-300 mb-1.5">
-                Bio & Research Focus
+                Public Bio & Research Focus
               </label>
               <textarea
                 rows={3}
-                placeholder="Share your research background, technical specialization, and goals with RISE..."
+                placeholder="Share your approved research background, technical specialization, and goals with RISE..."
                 value={formData.bio}
                 onChange={e => setFormData({ ...formData, bio: e.target.value })}
                 className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all resize-none"
@@ -400,7 +435,7 @@ export const EditProfileModal = ({ isOpen, onClose, targetUser = null }) => {
           {/* SECTION 4: SOCIAL & PORTFOLIO LINKS */}
           <div className="space-y-3">
             <span className="text-xs font-bold text-slate-300 uppercase tracking-wider block">
-              Online Profiles & Contact
+              Public Online Profiles & Contact
             </span>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -450,7 +485,7 @@ export const EditProfileModal = ({ isOpen, onClose, targetUser = null }) => {
             <div>
               <label className="block text-[11px] font-semibold text-slate-400 mb-1 flex items-center gap-1.5">
                 <Phone className="w-3.5 h-3.5 text-amber-400" />
-                <span>Contact Phone</span>
+                <span>Contact Phone (Private/Account Record)</span>
               </label>
               <input
                 type="tel"
@@ -462,7 +497,110 @@ export const EditProfileModal = ({ isOpen, onClose, targetUser = null }) => {
             </div>
           </div>
 
-          {/* SECTION 5: MODAL ACTION BUTTONS */}
+          {/* SECTION 5: PUBLIC PROFILE VISIBILITY CONTROLS */}
+          <div className="p-5 rounded-2xl bg-slate-950/70 border border-amber-500/30 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <Eye className="w-3.5 h-3.5" />
+                  <span>Public RISE Profile Visibility Settings</span>
+                </h4>
+                <p className="text-[11px] text-slate-400">
+                  Control which approved sections appear on your public RISE research portfolio (`#/member/public/{user.id}`).
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              
+              <div 
+                onClick={() => toggleSetting('showResearch')}
+                className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                  formData.showResearch ? 'bg-purple-950/40 border-purple-500/40 text-white' : 'bg-slate-900 border-slate-800 text-slate-400'
+                }`}
+              >
+                <div className="text-xs font-semibold">Show Research Projects</div>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  formData.showResearch ? 'bg-purple-500 text-slate-950' : 'bg-slate-800 text-slate-500'
+                }`}>
+                  {formData.showResearch ? 'ON' : 'OFF'}
+                </span>
+              </div>
+
+              <div 
+                onClick={() => toggleSetting('showProjects')}
+                className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                  formData.showProjects ? 'bg-cyan-950/40 border-cyan-500/40 text-white' : 'bg-slate-900 border-slate-800 text-slate-400'
+                }`}
+              >
+                <div className="text-xs font-semibold">Show Projects & Demos</div>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  formData.showProjects ? 'bg-cyan-500 text-slate-950' : 'bg-slate-800 text-slate-500'
+                }`}>
+                  {formData.showProjects ? 'ON' : 'OFF'}
+                </span>
+              </div>
+
+              <div 
+                onClick={() => toggleSetting('showPublications')}
+                className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                  formData.showPublications ? 'bg-amber-950/40 border-amber-500/40 text-white' : 'bg-slate-900 border-slate-800 text-slate-400'
+                }`}
+              >
+                <div className="text-xs font-semibold">Show Publications & Papers</div>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  formData.showPublications ? 'bg-amber-500 text-slate-950' : 'bg-slate-800 text-slate-500'
+                }`}>
+                  {formData.showPublications ? 'ON' : 'OFF'}
+                </span>
+              </div>
+
+              <div 
+                onClick={() => toggleSetting('showEvents')}
+                className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                  formData.showEvents ? 'bg-emerald-950/40 border-emerald-500/40 text-white' : 'bg-slate-900 border-slate-800 text-slate-400'
+                }`}
+              >
+                <div className="text-xs font-semibold">Show Events Organized</div>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  formData.showEvents ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-slate-500'
+                }`}>
+                  {formData.showEvents ? 'ON' : 'OFF'}
+                </span>
+              </div>
+
+              <div 
+                onClick={() => toggleSetting('showAchievements')}
+                className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                  formData.showAchievements ? 'bg-yellow-950/40 border-yellow-500/40 text-white' : 'bg-slate-900 border-slate-800 text-slate-400'
+                }`}
+              >
+                <div className="text-xs font-semibold">Show Honors & Accolades</div>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  formData.showAchievements ? 'bg-yellow-500 text-slate-950' : 'bg-slate-800 text-slate-500'
+                }`}>
+                  {formData.showAchievements ? 'ON' : 'OFF'}
+                </span>
+              </div>
+
+              <div 
+                onClick={() => toggleSetting('showSkills')}
+                className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                  formData.showSkills ? 'bg-blue-950/40 border-blue-500/40 text-white' : 'bg-slate-900 border-slate-800 text-slate-400'
+                }`}
+              >
+                <div className="text-xs font-semibold">Show Technical Skills</div>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  formData.showSkills ? 'bg-blue-500 text-slate-950' : 'bg-slate-800 text-slate-500'
+                }`}>
+                  {formData.showSkills ? 'ON' : 'OFF'}
+                </span>
+              </div>
+
+            </div>
+          </div>
+
+          {/* SECTION 6: MODAL ACTION BUTTONS */}
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
             <button
               type="button"

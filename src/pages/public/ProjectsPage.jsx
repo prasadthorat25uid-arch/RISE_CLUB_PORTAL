@@ -26,6 +26,8 @@ export const ProjectsPage = () => {
   const projects = data.projects || [];
 
   const filteredProjects = projects.filter(proj => {
+    if (proj.visibility === 'Private' || proj.visibility === 'Internal') return false;
+
     const matchesStatus = selectedStatus === 'All' || proj.status === selectedStatus;
     const matchesSearch = 
       proj.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||

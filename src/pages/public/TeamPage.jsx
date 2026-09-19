@@ -11,10 +11,10 @@ import {
   Github,
   Linkedin,
   Globe,
-  Mail
+  ExternalLink
 } from 'lucide-react';
 
-export const TeamPage = () => {
+export const TeamPage = ({ setActiveTab }) => {
   const { data } = useData();
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -40,6 +40,14 @@ export const TeamPage = () => {
       m.technicalSkills?.some(s => s.toLowerCase().includes(term))
     );
   });
+
+  const navigateToProfile = (memberId) => {
+    if (setActiveTab) {
+      setActiveTab(`member/public/${memberId}`);
+    } else {
+      window.location.hash = `#/member/public/${memberId}`;
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-14 py-12">
@@ -81,11 +89,17 @@ export const TeamPage = () => {
                 <div>
                   <h3 className="text-lg font-bold text-white font-outfit">{faculty.name}</h3>
                   <p className="text-xs text-purple-300 font-medium">{faculty.department} | {faculty.division}</p>
-                  <p className="text-[11px] text-slate-400 font-mono mt-0.5">{faculty.email}</p>
                 </div>
               </div>
               <p className="text-xs text-slate-300 leading-relaxed">{faculty.bio}</p>
             </div>
+            <button
+              onClick={() => navigateToProfile(faculty.id)}
+              className="mt-4 w-full py-2.5 px-4 rounded-xl bg-purple-950/60 hover:bg-purple-600 hover:text-white text-purple-300 border border-purple-500/40 text-xs font-bold flex items-center justify-center gap-2 transition-all group"
+            >
+              <span>View RISE Profile</span>
+              <ExternalLink className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+            </button>
           </div>
         )}
 
@@ -109,11 +123,17 @@ export const TeamPage = () => {
                 <div>
                   <h3 className="text-lg font-bold text-white font-outfit">{president.name}</h3>
                   <p className="text-xs text-amber-300 font-medium">{president.department} ({president.academicYear})</p>
-                  <p className="text-[11px] text-slate-400 font-mono mt-0.5">{president.email}</p>
                 </div>
               </div>
               <p className="text-xs text-slate-300 leading-relaxed">{president.bio}</p>
             </div>
+            <button
+              onClick={() => navigateToProfile(president.id)}
+              className="mt-4 w-full py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 border border-amber-400 text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-md group"
+            >
+              <span>View RISE Profile</span>
+              <ExternalLink className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+            </button>
           </div>
         )}
 
@@ -130,124 +150,179 @@ export const TeamPage = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-6xl mx-auto">
           
           {/* Research Head */}
-          <div className="glass-panel p-5 rounded-2xl border border-slate-800 space-y-3 hover:border-cyan-500/40 transition-all">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">RESEARCH HEAD</span>
-              <span className="text-[10px] text-slate-400 font-mono">Publications & Review</span>
+          <div className="glass-panel p-5 rounded-2xl border border-slate-800 space-y-3 hover:border-cyan-500/40 transition-all flex flex-col justify-between">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">RESEARCH HEAD</span>
+                <span className="text-[10px] text-slate-400 font-mono">Publications & Review</span>
+              </div>
+              {researchHead && (
+                <div className="flex items-center gap-3">
+                  <Avatar 
+                    src={researchHead.photo} 
+                    name={researchHead.name} 
+                    size="lg" 
+                    className="w-12 h-12 rounded-xl border border-cyan-400/40 shrink-0" 
+                  />
+                  <div>
+                    <h4 className="text-sm font-bold text-white">{researchHead.name}</h4>
+                    <p className="text-[11px] text-slate-400">{researchHead.department} ({researchHead.academicYear})</p>
+                  </div>
+                </div>
+              )}
+              <p className="text-xs text-slate-400">Overseeing paper publications, literature review frameworks, and research gap formulation.</p>
             </div>
             {researchHead && (
-              <div className="flex items-center gap-3">
-                <Avatar 
-                  src={researchHead.photo} 
-                  name={researchHead.name} 
-                  size="lg" 
-                  className="w-12 h-12 rounded-xl border border-cyan-400/40 shrink-0" 
-                />
-                <div>
-                  <h4 className="text-sm font-bold text-white">{researchHead.name}</h4>
-                  <p className="text-[11px] text-slate-400">{researchHead.department} ({researchHead.academicYear})</p>
-                </div>
-              </div>
+              <button
+                onClick={() => navigateToProfile(researchHead.id)}
+                className="w-full py-2 px-3 rounded-xl bg-slate-900 hover:bg-cyan-500 hover:text-slate-950 text-cyan-400 border border-cyan-500/30 text-xs font-bold flex items-center justify-center gap-1.5 transition-all group"
+              >
+                <span>View RISE Profile</span>
+                <ExternalLink className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+              </button>
             )}
-            <p className="text-xs text-slate-400">Overseeing paper publications, literature review frameworks, and research gap formulation.</p>
           </div>
 
           {/* Member Coordinators */}
-          <div className="glass-panel p-5 rounded-2xl border border-slate-800 space-y-3 hover:border-amber-500/40 transition-all">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">MEMBER COORDINATORS</span>
-              <span className="text-[10px] text-slate-400 font-mono">Interview & Onboarding</span>
-            </div>
-            <div className="space-y-2">
-              {memberCoordinators.map(m => (
-                <div key={m.id} className="flex items-center gap-3">
-                  <Avatar 
-                    src={m.photo} 
-                    name={m.name} 
-                    size="md" 
-                    className="w-10 h-10 rounded-xl border border-amber-400/40 shrink-0" 
-                  />
-                  <div>
-                    <h4 className="text-xs font-bold text-white">{m.name}</h4>
-                    <p className="text-[10px] text-slate-400">{m.department} ({m.academicYear})</p>
+          <div className="glass-panel p-5 rounded-2xl border border-slate-800 space-y-3 hover:border-amber-500/40 transition-all flex flex-col justify-between">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">MEMBER COORDINATORS</span>
+                <span className="text-[10px] text-slate-400 font-mono">Interview & Onboarding</span>
+              </div>
+              <div className="space-y-2">
+                {memberCoordinators.map(m => (
+                  <div key={m.id} className="flex items-center justify-between gap-2 p-1.5 rounded-xl hover:bg-slate-800/40">
+                    <div className="flex items-center gap-2.5">
+                      <Avatar 
+                        src={m.photo} 
+                        name={m.name} 
+                        size="sm" 
+                        className="w-9 h-9 rounded-xl border border-amber-400/40 shrink-0" 
+                      />
+                      <div>
+                        <h4 className="text-xs font-bold text-white">{m.name}</h4>
+                        <p className="text-[10px] text-slate-400">{m.department} ({m.academicYear})</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => navigateToProfile(m.id)}
+                      className="p-1.5 rounded-lg bg-slate-800 hover:bg-amber-500 hover:text-slate-950 text-amber-400 transition-all"
+                      title="View Profile"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                    </button>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
+              <p className="text-xs text-slate-400">Coordinating student interview selection pipeline, member onboarding, and performance metrics.</p>
             </div>
-            <p className="text-xs text-slate-400">Coordinating student interview selection pipeline, member onboarding, and performance metrics.</p>
           </div>
 
           {/* Event Coordinators */}
-          <div className="glass-panel p-5 rounded-2xl border border-slate-800 space-y-3 hover:border-cyan-500/40 transition-all">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">EVENT COORDINATORS</span>
-              <span className="text-[10px] text-slate-400 font-mono">Workshops & Symposia</span>
-            </div>
-            <div className="space-y-2">
-              {eventCoordinators.map(m => (
-                <div key={m.id} className="flex items-center gap-3">
-                  <Avatar 
-                    src={m.photo} 
-                    name={m.name} 
-                    size="md" 
-                    className="w-10 h-10 rounded-xl border border-cyan-400/40 shrink-0" 
-                  />
-                  <div>
-                    <h4 className="text-xs font-bold text-white">{m.name}</h4>
-                    <p className="text-[10px] text-slate-400">{m.department} ({m.academicYear})</p>
+          <div className="glass-panel p-5 rounded-2xl border border-slate-800 space-y-3 hover:border-cyan-500/40 transition-all flex flex-col justify-between">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">EVENT COORDINATORS</span>
+                <span className="text-[10px] text-slate-400 font-mono">Workshops & Symposia</span>
+              </div>
+              <div className="space-y-2">
+                {eventCoordinators.map(m => (
+                  <div key={m.id} className="flex items-center justify-between gap-2 p-1.5 rounded-xl hover:bg-slate-800/40">
+                    <div className="flex items-center gap-2.5">
+                      <Avatar 
+                        src={m.photo} 
+                        name={m.name} 
+                        size="sm" 
+                        className="w-9 h-9 rounded-xl border border-cyan-400/40 shrink-0" 
+                      />
+                      <div>
+                        <h4 className="text-xs font-bold text-white">{m.name}</h4>
+                        <p className="text-[10px] text-slate-400">{m.department} ({m.academicYear})</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => navigateToProfile(m.id)}
+                      className="p-1.5 rounded-lg bg-slate-800 hover:bg-cyan-500 hover:text-slate-950 text-cyan-400 transition-all"
+                      title="View Profile"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                    </button>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
+              <p className="text-xs text-slate-400">Managing national symposia, hands-on workshops, venue arrangements, and event scheduling.</p>
             </div>
-            <p className="text-xs text-slate-400">Managing national symposia, hands-on workshops, venue arrangements, and event scheduling.</p>
           </div>
 
           {/* Secretary */}
-          <div className="glass-panel p-5 rounded-2xl border border-slate-800 space-y-3 hover:border-purple-500/40 transition-all">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold text-purple-400 uppercase tracking-wider">SECRETARY</span>
-              <span className="text-[10px] text-slate-400 font-mono">Records & Governance</span>
+          <div className="glass-panel p-5 rounded-2xl border border-slate-800 space-y-3 hover:border-purple-500/40 transition-all flex flex-col justify-between">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold text-purple-400 uppercase tracking-wider">SECRETARY</span>
+                <span className="text-[10px] text-slate-400 font-mono">Records & Governance</span>
+              </div>
+              {secretary && (
+                <div className="flex items-center gap-3">
+                  <Avatar 
+                    src={secretary.photo} 
+                    name={secretary.name} 
+                    size="lg" 
+                    className="w-12 h-12 rounded-xl border border-purple-400/40 shrink-0" 
+                  />
+                  <div>
+                    <h4 className="text-sm font-bold text-white">{secretary.name}</h4>
+                    <p className="text-[11px] text-slate-400">{secretary.department} ({secretary.academicYear})</p>
+                  </div>
+                </div>
+              )}
+              <p className="text-xs text-slate-400">Maintaining society governance records, meeting archives, and operational discipline.</p>
             </div>
             {secretary && (
-              <div className="flex items-center gap-3">
-                <Avatar 
-                  src={secretary.photo} 
-                  name={secretary.name} 
-                  size="lg" 
-                  className="w-12 h-12 rounded-xl border border-purple-400/40 shrink-0" 
-                />
-                <div>
-                  <h4 className="text-sm font-bold text-white">{secretary.name}</h4>
-                  <p className="text-[11px] text-slate-400">{secretary.department} ({secretary.academicYear})</p>
-                </div>
-              </div>
+              <button
+                onClick={() => navigateToProfile(secretary.id)}
+                className="w-full py-2 px-3 rounded-xl bg-slate-900 hover:bg-purple-600 hover:text-white text-purple-300 border border-purple-500/30 text-xs font-bold flex items-center justify-center gap-1.5 transition-all group"
+              >
+                <span>View RISE Profile</span>
+                <ExternalLink className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+              </button>
             )}
-            <p className="text-xs text-slate-400">Maintaining society governance records, meeting archives, and operational discipline.</p>
           </div>
 
           {/* Social Media & Publicity Heads */}
-          <div className="glass-panel p-5 rounded-2xl border border-slate-800 space-y-3 hover:border-orange-500/40 transition-all sm:col-span-2">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold text-orange-400 uppercase tracking-wider">SOCIAL MEDIA & PUBLICITY HEADS</span>
-              <span className="text-[10px] text-slate-400 font-mono">Branding & Media Reach</span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {socialHeads.map(m => (
-                <div key={m.id} className="flex items-center gap-3">
-                  <Avatar 
-                    src={m.photo} 
-                    name={m.name} 
-                    size="md" 
-                    className="w-10 h-10 rounded-xl border border-orange-400/40 shrink-0" 
-                  />
-                  <div>
-                    <h4 className="text-xs font-bold text-white">{m.name}</h4>
-                    <p className="text-[10px] text-slate-400">{m.department} ({m.academicYear})</p>
+          <div className="glass-panel p-5 rounded-2xl border border-slate-800 space-y-3 hover:border-orange-500/40 transition-all sm:col-span-2 flex flex-col justify-between">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold text-orange-400 uppercase tracking-wider">SOCIAL MEDIA & PUBLICITY HEADS</span>
+                <span className="text-[10px] text-slate-400 font-mono">Branding & Media Reach</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {socialHeads.map(m => (
+                  <div key={m.id} className="flex items-center justify-between gap-2 p-2 rounded-xl bg-slate-950/40 border border-slate-800/80">
+                    <div className="flex items-center gap-2.5">
+                      <Avatar 
+                        src={m.photo} 
+                        name={m.name} 
+                        size="md" 
+                        className="w-10 h-10 rounded-xl border border-orange-400/40 shrink-0" 
+                      />
+                      <div>
+                        <h4 className="text-xs font-bold text-white">{m.name}</h4>
+                        <p className="text-[10px] text-slate-400">{m.department} ({m.academicYear})</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => navigateToProfile(m.id)}
+                      className="p-1.5 rounded-lg bg-slate-800 hover:bg-orange-500 hover:text-slate-950 text-orange-400 transition-all"
+                      title="View Profile"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                    </button>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
+              <p className="text-xs text-slate-400">Heading society media reach, technical branding, and research publication spotlights.</p>
             </div>
-            <p className="text-xs text-slate-400">Heading society media reach, technical branding, and research publication spotlights.</p>
           </div>
 
         </div>
@@ -265,7 +340,7 @@ export const TeamPage = () => {
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
             <input
               type="text"
-              placeholder="Search Name, PRN, ID, Skills..."
+              placeholder="Search Name, ID, Skills..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full bg-slate-900 border border-slate-700 rounded-xl pl-9 pr-3 py-1.5 text-xs text-white focus:outline-none focus:border-amber-500"
@@ -303,26 +378,37 @@ export const TeamPage = () => {
                 </div>
               </div>
 
-              {/* Member Social Links if available */}
-              {(mem.githubUrl || mem.linkedinUrl || mem.portfolioLink) && (
-                <div className="flex items-center gap-2 pt-2 border-t border-slate-800/80 text-[11px]">
-                  {mem.githubUrl && (
-                    <a href={mem.githubUrl} target="_blank" rel="noreferrer" className="text-slate-400 hover:text-white" title="GitHub">
-                      <Github className="w-3.5 h-3.5" />
-                    </a>
-                  )}
-                  {mem.linkedinUrl && (
-                    <a href={mem.linkedinUrl} target="_blank" rel="noreferrer" className="text-cyan-400 hover:text-cyan-300" title="LinkedIn">
-                      <Linkedin className="w-3.5 h-3.5" />
-                    </a>
-                  )}
-                  {mem.portfolioLink && (
-                    <a href={mem.portfolioLink} target="_blank" rel="noreferrer" className="text-emerald-400 hover:text-emerald-300" title="Portfolio">
-                      <Globe className="w-3.5 h-3.5" />
-                    </a>
-                  )}
-                </div>
-              )}
+              <div className="space-y-2 pt-2 border-t border-slate-800/80">
+                {/* Member Social Links if available */}
+                {(mem.githubUrl || mem.linkedinUrl || mem.portfolioLink) && (
+                  <div className="flex items-center gap-2 text-[11px]">
+                    {mem.githubUrl && (
+                      <a href={mem.githubUrl} target="_blank" rel="noreferrer" className="text-slate-400 hover:text-white" title="GitHub">
+                        <Github className="w-3.5 h-3.5" />
+                      </a>
+                    )}
+                    {mem.linkedinUrl && (
+                      <a href={mem.linkedinUrl} target="_blank" rel="noreferrer" className="text-cyan-400 hover:text-cyan-300" title="LinkedIn">
+                        <Linkedin className="w-3.5 h-3.5" />
+                      </a>
+                    )}
+                    {mem.portfolioLink && (
+                      <a href={mem.portfolioLink} target="_blank" rel="noreferrer" className="text-emerald-400 hover:text-emerald-300" title="Portfolio">
+                        <Globe className="w-3.5 h-3.5" />
+                      </a>
+                    )}
+                  </div>
+                )}
+
+                {/* View RISE Profile CTA */}
+                <button
+                  onClick={() => navigateToProfile(mem.id)}
+                  className="w-full py-2 px-3 rounded-xl bg-slate-950 hover:bg-amber-500 hover:text-slate-950 text-amber-400 border border-amber-500/30 text-xs font-bold flex items-center justify-center gap-1.5 transition-all group"
+                >
+                  <span>View RISE Profile</span>
+                  <ExternalLink className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                </button>
+              </div>
             </div>
           ))}
         </div>

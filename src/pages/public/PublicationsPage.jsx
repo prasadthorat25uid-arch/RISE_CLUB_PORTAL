@@ -5,6 +5,10 @@ import { BookOpen, Award, ExternalLink, ShieldCheck } from 'lucide-react';
 export const PublicationsPage = () => {
   const { data } = useData();
 
+  const publicPublications = (data.publications || []).filter(
+    pub => pub.visibility !== 'Private' && pub.visibility !== 'Internal'
+  );
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-10">
       <div className="text-center max-w-2xl mx-auto space-y-2">
@@ -15,7 +19,7 @@ export const PublicationsPage = () => {
       </div>
 
       <div className="space-y-4">
-        {data.publications.map(pub => (
+        {publicPublications.map(pub => (
           <div key={pub.id} className="glass-panel p-6 rounded-3xl space-y-3 hover:border-amber-500/40 transition-all">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold ${

@@ -35,7 +35,11 @@ export const AchievementsPage = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedAchievement, setSelectedAchievement] = useState(null);
 
-  const achievements = data?.achievements || [];
+  const achievements = useMemo(() => {
+    return (data?.achievements || []).filter(
+      a => a.visibility !== 'Private' && a.visibility !== 'Internal'
+    );
+  }, [data?.achievements]);
 
   // Metrics summary
   const metrics = useMemo(() => {

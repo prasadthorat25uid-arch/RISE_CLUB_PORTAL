@@ -36,32 +36,47 @@ import { ApplicationsManagement } from './pages/admin/ApplicationsManagement';
 import { CertificatesManagement } from './pages/admin/CertificatesManagement';
 import { AnnouncementsManagement } from './pages/admin/AnnouncementsManagement';
 import { ProfilePage } from './pages/public/ProfilePage';
+import { PublicMemberProfile } from './pages/public/PublicMemberProfile';
 import { NotificationsPage } from './pages/public/NotificationsPage';
 import { UnauthorizedPage } from './pages/public/UnauthorizedPage';
 import { DashboardShell } from './components/DashboardShell';
 
 const AppContent = () => {
-  const getTabFromHash = () => {
+  const getRouteInfo = () => {
     let hash = window.location.hash.replace(/^#\/?/, '').trim();
     if (hash.startsWith('dashboard/')) {
       hash = hash.replace('dashboard/', 'dashboard-');
     }
-    return hash || 'home';
+
+    // Check for member public profile: member/public/:id or member/:id
+    const memberPublicMatch = hash.match(/^member\/(?:public\/)?([^/?#]+)$/i);
+    if (memberPublicMatch) {
+      return { tab: 'member-public', memberId: decodeURIComponent(memberPublicMatch[1]) };
+    }
+
+    // Check for member private profile: member/private/:id or member/private
+    const memberPrivateMatch = hash.match(/^member\/private(?:\/([^/?#]+))?$/i);
+    if (memberPrivateMatch) {
+      return { tab: 'profile', memberId: memberPrivateMatch[1] ? decodeURIComponent(memberPrivateMatch[1]) : null };
+    }
+
+    return { tab: hash || 'home', memberId: null };
   };
 
-  const [activeTab, setActiveTabState] = useState(() => getTabFromHash());
+  const [routeInfo, setRouteInfo] = useState(() => getRouteInfo());
+  const activeTab = routeInfo.tab;
+  const currentMemberId = routeInfo.memberId;
   const { isAuthenticated, currentUser, permissions } = useAuth();
 
   const setActiveTab = (tab) => {
     window.location.hash = `#/${tab}`;
-    setActiveTabState(tab);
+    setRouteInfo(getRouteInfo());
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   React.useEffect(() => {
     const handleHashChange = () => {
-      const tab = getTabFromHash();
-      setActiveTabState(tab);
+      setRouteInfo(getRouteInfo());
     };
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
@@ -100,7 +115,9 @@ const AppContent = () => {
         return <PublicationsPage />;
       case 'members':
       case 'team':
-        return <TeamPage />;
+        return <TeamPage setActiveTab={setActiveTab} />;
+      case 'member-public':
+        return <PublicMemberProfile memberId={currentMemberId} setActiveTab={setActiveTab} />;
       case 'achievements':
         return <AchievementsPage />;
       case 'contact':
@@ -114,7 +131,7 @@ const AppContent = () => {
 
       // Universal Authenticated Pages
       case 'profile':
-        return <ProfilePage setActiveTab={setActiveTab} />;
+        return <ProfilePage setActiveTab={setActiveTab} targetUserId={currentMemberId} />;
       case 'notifications':
         return <NotificationsPage setActiveTab={setActiveTab} />;
 

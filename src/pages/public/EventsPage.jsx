@@ -25,6 +25,8 @@ export const EventsPage = () => {
   const events = data.events || [];
 
   const filteredEvents = events.filter(evt => {
+    if (evt.visibility === 'Private' || evt.visibility === 'Internal') return false;
+
     const matchesTab = activeTab === 'All' || evt.status === activeTab;
     const matchesSearch = 
       evt.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||

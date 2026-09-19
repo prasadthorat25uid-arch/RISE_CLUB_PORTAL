@@ -35,6 +35,8 @@ export const ResearchPage = () => {
   const publications = data.publications || [];
 
   const filteredPublications = publications.filter(pub => {
+    if (pub.visibility === 'Private' || pub.visibility === 'Internal') return false;
+
     const matchesDomain = selectedDomain === 'All' || 
       pub.domain?.toLowerCase().includes(selectedDomain.toLowerCase()) ||
       pub.researchArea?.toLowerCase().includes(selectedDomain.toLowerCase());

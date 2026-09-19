@@ -14,18 +14,21 @@ import {
   Layers, 
   Edit3, 
   ShieldCheck, 
-  ExternalLink,
-  Lock,
-  Github,
-  Linkedin,
-  Globe,
-  Sparkles,
-  CheckCircle2,
-  FileText
+  ExternalLink, 
+  Lock, 
+  Github, 
+  Linkedin, 
+  Globe, 
+  Sparkles, 
+  CheckCircle2, 
+  FileText,
+  Eye,
+  EyeOff,
+  Share2
 } from 'lucide-react';
 
 export const ProfilePage = ({ setActiveTab }) => {
-  const { data } = useData();
+  const { data, updateMemberProfile } = useData();
   const { currentUser, isAuthenticated } = useAuth();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
@@ -63,15 +66,22 @@ export const ProfilePage = ({ setActiveTab }) => {
     a.recipientPRN === currentUser.prn
   );
 
+  const toggleVisibility = async (field) => {
+    const currentValue = currentUser[field] !== false;
+    await updateMemberProfile(currentUser.id, {
+      [field]: !currentValue
+    }, currentUser.id);
+  };
+
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-10">
       
-      {/* 1. TOP PROFILE HEADER & ACTIONS */}
-      <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-slate-800 bg-gradient-to-r from-slate-900 via-slate-900 to-amber-950/40 relative overflow-hidden shadow-2xl">
+      {/* 1. TOP PRIVATE PROFILE HEADER & ACTIONS */}
+      <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-slate-800 bg-gradient-to-r from-slate-900 via-slate-900 to-amber-950/40 relative overflow-hidden shadow-2xl space-y-6">
         <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
           
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left">
-            {/* Dynamic Avatar with fallback to Initials */}
+            {/* Dynamic Avatar */}
             <div className="relative group shrink-0">
               <Avatar
                 src={currentUser.photo}
@@ -98,6 +108,9 @@ export const ProfilePage = ({ setActiveTab }) => {
                   <ShieldCheck className="w-3 h-3" />
                   <span>{currentUser.status || 'Active Member'}</span>
                 </span>
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono text-slate-400 bg-slate-900 border border-slate-800">
+                  Joined: {currentUser.joiningDate || '2026-07-01'}
+                </span>
               </div>
 
               <h1 className="text-2xl sm:text-4xl font-black text-white font-outfit">
@@ -105,7 +118,7 @@ export const ProfilePage = ({ setActiveTab }) => {
               </h1>
 
               <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 text-xs text-slate-300">
-                <span className="font-mono text-amber-400">PRN: {currentUser.prn}</span>
+                <span className="font-mono text-amber-400 font-bold">PRN: {currentUser.prn}</span>
                 <span>•</span>
                 <span className="font-mono text-slate-400">ID: {currentUser.memberId}</span>
                 <span>•</span>
@@ -120,75 +133,186 @@ export const ProfilePage = ({ setActiveTab }) => {
             </div>
           </div>
 
-          {/* Edit Profile CTA Button */}
-          <button
-            onClick={() => setIsEditModalOpen(true)}
-            className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 text-xs font-bold shadow-xl shadow-amber-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all shrink-0"
-          >
-            <Edit3 className="w-4 h-4" />
-            <span>Edit Profile</span>
-          </button>
+          {/* Action CTAs: View Public Profile & Edit Profile */}
+          <div className="flex flex-wrap items-center gap-3 shrink-0">
+            <button
+              onClick={() => setActiveTab(`member/public/${currentUser.id}`)}
+              className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-amber-300 border border-amber-500/40 text-xs font-bold shadow-md transition-all"
+              title="Open Public RISE Research Portfolio"
+            >
+              <Globe className="w-4 h-4 text-amber-400" />
+              <span>View My Public RISE Profile</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </button>
+
+            <button
+              onClick={() => setIsEditModalOpen(true)}
+              className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 text-xs font-bold shadow-xl shadow-amber-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+            >
+              <Edit3 className="w-4 h-4" />
+              <span>Edit Profile</span>
+            </button>
+          </div>
 
         </div>
 
-        {/* Social / Portfolio Links Bar */}
-        <div className="mt-6 pt-5 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-400">
-          <div className="flex flex-wrap items-center gap-4">
-            <span className="flex items-center gap-1.5 text-slate-300">
-              <Mail className="w-3.5 h-3.5 text-amber-400" />
-              <span className="font-mono">{currentUser.email}</span>
+        {/* Private Personal Credentials Grid */}
+        <div className="pt-4 border-t border-slate-800/80 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+          <div className="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-1">
+            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider flex items-center gap-1">
+              <Mail className="w-3 h-3 text-amber-400" />
+              <span>Private Account Email</span>
             </span>
-
-            {currentUser.phone && (
-              <span className="flex items-center gap-1.5 text-slate-300">
-                <Phone className="w-3.5 h-3.5 text-amber-400" />
-                <span>{currentUser.phone}</span>
-              </span>
-            )}
+            <p className="text-white font-mono font-semibold">{currentUser.email}</p>
           </div>
 
-          <div className="flex items-center gap-2">
-            {currentUser.githubUrl && (
-              <a
-                href={currentUser.githubUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-amber-500 text-slate-300 hover:text-white transition-all"
-              >
-                <Github className="w-3.5 h-3.5" />
-                <span>GitHub</span>
-              </a>
-            )}
+          <div className="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-1">
+            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider flex items-center gap-1">
+              <Phone className="w-3 h-3 text-amber-400" />
+              <span>Private Contact Phone</span>
+            </span>
+            <p className="text-white font-mono font-semibold">{currentUser.phone || 'Not Provided'}</p>
+          </div>
 
-            {currentUser.linkedinUrl && (
-              <a
-                href={currentUser.linkedinUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-amber-500 text-slate-300 hover:text-white transition-all"
-              >
-                <Linkedin className="w-3.5 h-3.5 text-cyan-400" />
-                <span>LinkedIn</span>
-              </a>
-            )}
-
-            {currentUser.portfolioLink && (
-              <a
-                href={currentUser.portfolioLink}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-amber-500 text-slate-300 hover:text-white transition-all"
-              >
-                <Globe className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Portfolio</span>
-                <ExternalLink className="w-3 h-3 ml-0.5" />
-              </a>
-            )}
+          <div className="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-1">
+            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider flex items-center gap-1">
+              <Lock className="w-3 h-3 text-purple-400" />
+              <span>Security Classification</span>
+            </span>
+            <p className="text-purple-300 font-semibold">Private Information • Auth Protected</p>
           </div>
         </div>
       </div>
 
-      {/* 2. RESEARCH INTERESTS & TECHNICAL SKILLS */}
+      {/* 2. PUBLIC PROFILE VISIBILITY CONTROLS CARD */}
+      <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-amber-500/30 space-y-5 bg-slate-900/80">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+          <div>
+            <h3 className="text-base font-bold text-white font-outfit flex items-center gap-2">
+              <Eye className="w-5 h-5 text-amber-400" />
+              <span>Public RISE Research Portfolio Visibility Controls</span>
+            </h3>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Control which sections appear when visitors view your public RISE profile at <span className="text-amber-400 font-mono">#/member/public/{currentUser.id}</span>.
+            </p>
+          </div>
+
+          <button
+            onClick={() => setActiveTab(`member/public/${currentUser.id}`)}
+            className="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-amber-500 text-xs text-amber-300 font-semibold transition-all shrink-0"
+          >
+            Preview Public Profile →
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          
+          <div 
+            onClick={() => toggleVisibility('showResearch')}
+            className={`p-3.5 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
+              currentUser.showResearch !== false ? 'bg-purple-950/40 border-purple-500/40 text-white' : 'bg-slate-950 border-slate-800 text-slate-500'
+            }`}
+          >
+            <div className="space-y-0.5">
+              <div className="text-xs font-bold">Research Publications</div>
+              <div className="text-[10px] text-slate-400">Approved scientific papers</div>
+            </div>
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+              currentUser.showResearch !== false ? 'bg-purple-500 text-slate-950' : 'bg-slate-800 text-slate-500'
+            }`}>
+              {currentUser.showResearch !== false ? 'PUBLIC' : 'HIDDEN'}
+            </span>
+          </div>
+
+          <div 
+            onClick={() => toggleVisibility('showProjects')}
+            className={`p-3.5 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
+              currentUser.showProjects !== false ? 'bg-cyan-950/40 border-cyan-500/40 text-white' : 'bg-slate-950 border-slate-800 text-slate-500'
+            }`}
+          >
+            <div className="space-y-0.5">
+              <div className="text-xs font-bold">Projects & Demos</div>
+              <div className="text-[10px] text-slate-400">Prototypes & GitHub repos</div>
+            </div>
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+              currentUser.showProjects !== false ? 'bg-cyan-500 text-slate-950' : 'bg-slate-800 text-slate-500'
+            }`}>
+              {currentUser.showProjects !== false ? 'PUBLIC' : 'HIDDEN'}
+            </span>
+          </div>
+
+          <div 
+            onClick={() => toggleVisibility('showPublications')}
+            className={`p-3.5 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
+              currentUser.showPublications !== false ? 'bg-amber-950/40 border-amber-500/40 text-white' : 'bg-slate-950 border-slate-800 text-slate-500'
+            }`}
+          >
+            <div className="space-y-0.5">
+              <div className="text-xs font-bold">Publications & Patents</div>
+              <div className="text-[10px] text-slate-400">Scopus papers & Indian patents</div>
+            </div>
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+              currentUser.showPublications !== false ? 'bg-amber-500 text-slate-950' : 'bg-slate-800 text-slate-500'
+            }`}>
+              {currentUser.showPublications !== false ? 'PUBLIC' : 'HIDDEN'}
+            </span>
+          </div>
+
+          <div 
+            onClick={() => toggleVisibility('showEvents')}
+            className={`p-3.5 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
+              currentUser.showEvents !== false ? 'bg-emerald-950/40 border-emerald-500/40 text-white' : 'bg-slate-950 border-slate-800 text-slate-500'
+            }`}
+          >
+            <div className="space-y-0.5">
+              <div className="text-xs font-bold">Event Roles</div>
+              <div className="text-[10px] text-slate-400">Workshops & Symposia roles</div>
+            </div>
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+              currentUser.showEvents !== false ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-slate-500'
+            }`}>
+              {currentUser.showEvents !== false ? 'PUBLIC' : 'HIDDEN'}
+            </span>
+          </div>
+
+          <div 
+            onClick={() => toggleVisibility('showAchievements')}
+            className={`p-3.5 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
+              currentUser.showAchievements !== false ? 'bg-yellow-950/40 border-yellow-500/40 text-white' : 'bg-slate-950 border-slate-800 text-slate-500'
+            }`}
+          >
+            <div className="space-y-0.5">
+              <div className="text-xs font-bold">Honors & Accolades</div>
+              <div className="text-[10px] text-slate-400">Hackathon wins & awards</div>
+            </div>
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+              currentUser.showAchievements !== false ? 'bg-yellow-500 text-slate-950' : 'bg-slate-800 text-slate-500'
+            }`}>
+              {currentUser.showAchievements !== false ? 'PUBLIC' : 'HIDDEN'}
+            </span>
+          </div>
+
+          <div 
+            onClick={() => toggleVisibility('showSkills')}
+            className={`p-3.5 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
+              currentUser.showSkills !== false ? 'bg-blue-950/40 border-blue-500/40 text-white' : 'bg-slate-950 border-slate-800 text-slate-500'
+            }`}
+          >
+            <div className="space-y-0.5">
+              <div className="text-xs font-bold">Technical Skills</div>
+              <div className="text-[10px] text-slate-400">Languages & AI frameworks</div>
+            </div>
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+              currentUser.showSkills !== false ? 'bg-blue-500 text-slate-950' : 'bg-slate-800 text-slate-500'
+            }`}>
+              {currentUser.showSkills !== false ? 'PUBLIC' : 'HIDDEN'}
+            </span>
+          </div>
+
+        </div>
+      </div>
+
+      {/* 3. RESEARCH INTERESTS & TECHNICAL SKILLS */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         
         {/* Research Interests */}
@@ -255,7 +379,7 @@ export const ProfilePage = ({ setActiveTab }) => {
 
       </div>
 
-      {/* 3. PROJECTS, RESEARCH PAPERS & VERIFIED CERTIFICATES */}
+      {/* 4. PROJECTS, RESEARCH PAPERS & VERIFIED CERTIFICATES */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Projects */}
@@ -263,11 +387,8 @@ export const ProfilePage = ({ setActiveTab }) => {
           <h4 className="text-sm font-bold text-white font-outfit flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Layers className="w-4 h-4 text-cyan-400" />
-              <span>Assigned Projects</span>
+              <span>My Projects ({myProjects.length})</span>
             </div>
-            <span className="text-xs font-mono text-cyan-400 bg-cyan-950/80 px-2 py-0.5 rounded-lg">
-              {myProjects.length}
-            </span>
           </h4>
 
           <div className="space-y-3">
@@ -296,11 +417,8 @@ export const ProfilePage = ({ setActiveTab }) => {
           <h4 className="text-sm font-bold text-white font-outfit flex items-center justify-between">
             <div className="flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-purple-400" />
-              <span>Authored Publications</span>
+              <span>My Publications ({myPublications.length})</span>
             </div>
-            <span className="text-xs font-mono text-purple-400 bg-purple-950/80 px-2 py-0.5 rounded-lg">
-              {myPublications.length}
-            </span>
           </h4>
 
           <div className="space-y-3">
@@ -325,11 +443,8 @@ export const ProfilePage = ({ setActiveTab }) => {
           <h4 className="text-sm font-bold text-white font-outfit flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Award className="w-4 h-4 text-emerald-400" />
-              <span>Verified Accolades</span>
+              <span>My Certificates ({myCertificates.length})</span>
             </div>
-            <span className="text-xs font-mono text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded-lg">
-              {myCertificates.length}
-            </span>
           </h4>
 
           <div className="space-y-3">
