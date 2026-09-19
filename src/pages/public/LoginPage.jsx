@@ -44,11 +44,14 @@ export const LoginPage = ({ setActiveTab }) => {
 
   // Test accounts drawer state
   const [testAccountsOpen, setTestAccountsOpen] = useState(false);
+  const [loginAs, setLoginAs] = useState('Student');
 
   const getDashboardRouteForRole = (role) => {
     switch (role) {
-      case 'President': return 'erp/president';
-      case 'Faculty Coordinator': return 'erp/faculty';
+      case 'Faculty Coordinator':
+      case 'President':
+      case 'Vice President':
+        return 'erp/admin';
       case 'Research Head': return 'erp/research';
       case 'Event Coordinator': return 'erp/events';
       case 'Social Media & Publicity Head': return 'erp/publicity';
@@ -140,6 +143,7 @@ export const LoginPage = ({ setActiveTab }) => {
     setPasswordInput(
       userObj.role === 'Faculty Coordinator' ? 'Faculty@2026' : 
       userObj.role === 'President' ? 'Ayushi@2026' : 
+      userObj.role === 'Vice President' ? 'Prasad@2026' : 
       userObj.role === 'Research Head' ? 'Shweta@2026' :
       userObj.role === 'Event Coordinator' ? 'Sairaj@2026' :
       userObj.role === 'Secretary' ? 'Sanskar@2026' :
@@ -253,6 +257,46 @@ export const LoginPage = ({ setActiveTab }) => {
         {/* Login Form */}
         <form onSubmit={handleLoginSubmit} className="p-6 sm:p-8 pt-2 space-y-4">
           
+          {/* Login As Selection (Institutional UI Selector - Section 24) */}
+          <div className="space-y-1.5 pb-1">
+            <label className="block text-xs font-bold text-slate-700">
+              Login As
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <label className={`flex items-center justify-center gap-2 p-2 rounded-lg border text-xs font-semibold cursor-pointer transition-all ${
+                loginAs === 'Student' 
+                  ? 'border-[#0f2b48] bg-blue-50/70 text-[#0f2b48] font-bold shadow-xs' 
+                  : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+              }`}>
+                <input
+                  type="radio"
+                  name="loginAs"
+                  value="Student"
+                  checked={loginAs === 'Student'}
+                  onChange={() => setLoginAs('Student')}
+                  className="w-3.5 h-3.5 text-[#0f2b48] focus:ring-[#0f2b48]"
+                />
+                <span>Student</span>
+              </label>
+
+              <label className={`flex items-center justify-center gap-2 p-2 rounded-lg border text-xs font-semibold cursor-pointer transition-all ${
+                loginAs === 'Staff / Faculty' 
+                  ? 'border-[#0f2b48] bg-blue-50/70 text-[#0f2b48] font-bold shadow-xs' 
+                  : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+              }`}>
+                <input
+                  type="radio"
+                  name="loginAs"
+                  value="Staff / Faculty"
+                  checked={loginAs === 'Staff / Faculty'}
+                  onChange={() => setLoginAs('Staff / Faculty')}
+                  className="w-3.5 h-3.5 text-[#0f2b48] focus:ring-[#0f2b48]"
+                />
+                <span>Staff / Faculty</span>
+              </label>
+            </div>
+          </div>
+
           {/* Field 1: Email / PRN */}
           <div className="space-y-1">
             <div className="flex items-center justify-between">

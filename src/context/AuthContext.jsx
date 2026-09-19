@@ -20,13 +20,14 @@ const verifyPassword = (inputPassword, storedHash, userRecord) => {
       inputPassword === defaultPrnPass ||
       inputPassword === defaultPrnPassAlt ||
       inputPassword === defaultNamePass ||
-      (userRecord?.role === 'Faculty Coordinator' && inputPassword === 'Faculty@2026') ||
-      (userRecord?.role === 'President' && inputPassword === 'Ayushi@2026') ||
-      (userRecord?.role === 'Research Head' && inputPassword === 'Shweta@2026') ||
+      (userRecord?.role === 'Faculty Coordinator' && (inputPassword === 'Faculty@2026' || inputPassword === 'Abhijit@2026')) ||
+      (userRecord?.role === 'President' && (inputPassword === 'Ayushi@2026' || inputPassword === 'President@2026')) ||
+      (userRecord?.role === 'Vice President' && (inputPassword === 'Prasad@2026' || inputPassword === 'VP@2026' || inputPassword === 'VicePresident@2026')) ||
+      (userRecord?.role === 'Research Head' && (inputPassword === 'Shweta@2026' || inputPassword === 'Research@2026')) ||
       (userRecord?.role === 'Event Coordinator' && (inputPassword === 'Sairaj@2026' || inputPassword === 'Event@2026')) ||
       (userRecord?.role === 'Secretary' && (inputPassword === 'Sanskar@2026' || inputPassword === 'Secretary@2026')) ||
-      (userRecord?.role === 'Member Coordinator' && (inputPassword === 'Vaishnavi@2026' || inputPassword === 'Prasad@2026')) ||
-      (userRecord?.role?.includes('Member') && (inputPassword === 'Rohan@2026' || inputPassword === 'Member@2026' || inputPassword === 'Aarav@2026'))
+      (userRecord?.role === 'Member Coordinator' && (inputPassword === 'Vaishnavi@2026' || inputPassword === 'Prasad@2026' || inputPassword === 'Coordinator@2026')) ||
+      (userRecord?.role?.includes('Member') && (inputPassword === 'Rohan@2026' || inputPassword === 'Member@2026' || inputPassword === 'Aarav@2026' || inputPassword === 'Riya@2026'))
     ) {
       return true;
     }
@@ -170,30 +171,41 @@ export const AuthProvider = ({ children }) => {
 
   const role = currentUser?.role || null;
 
+  const isFaculty = role === 'Faculty Coordinator';
+  const isPresident = role === 'President';
+  const isVicePresident = role === 'Vice President';
+  const isTopLevelAdmin = isFaculty || isPresident || isVicePresident;
+
   const permissions = currentUser ? {
-    isFaculty: role === 'Faculty Coordinator',
-    isPresident: role === 'President',
+    isFaculty,
+    isPresident,
+    isVicePresident,
+    isTopLevelAdmin,
     isResearchHead: role === 'Research Head',
     isEventCoordinator: role === 'Event Coordinator',
     isSocialHead: role === 'Social Media & Publicity Head',
     isSecretary: role === 'Secretary',
     isMemberCoordinator: role === 'Member Coordinator',
+    isTeacher: role === 'Teacher' || role === 'Faculty',
     isStudentLead: ['Research Head', 'Event Coordinator', 'Social Media & Publicity Head', 'Secretary', 'Member Coordinator'].includes(role),
     isMember: role === 'RISE Club Member' || role === 'Research Club Member' || role === 'Club Member',
 
-    // Role-based functional capabilities (Admins: Faculty Coordinator, President)
-    canManageMembers: role === 'Faculty Coordinator' || role === 'President' || role === 'Member Coordinator',
-    canCreateMemberProfile: role === 'Faculty Coordinator' || role === 'President' || role === 'Member Coordinator',
-    canDeleteMemberProfile: role === 'Faculty Coordinator' || role === 'President',
-    canBulkCreateMembers: role === 'Faculty Coordinator' || role === 'President',
-    canResetPasswords: role === 'Faculty Coordinator' || role === 'President',
-    canCreateTeams: role === 'Faculty Coordinator' || role === 'President',
-    canAssignTasks: role === 'Faculty Coordinator' || role === 'President' || ['Research Head', 'Event Coordinator', 'Secretary', 'Member Coordinator'].includes(role),
-    canSuspendDeactivate: role === 'Faculty Coordinator' || role === 'President',
-    canRemoveAccess: role === 'Faculty Coordinator' || role === 'President',
-    canApproveApplications: role === 'Faculty Coordinator' || role === 'President' || role === 'Member Coordinator',
-    canIssueCertificates: role === 'Faculty Coordinator' || role === 'President',
-    canViewAuditLogs: role === 'Faculty Coordinator' || role === 'President'
+    // Equal Top-Level Admin Capabilities (Faculty Coordinator = President = Vice President)
+    canManageMembers: isTopLevelAdmin || role === 'Member Coordinator',
+    canCreateMemberProfile: isTopLevelAdmin || role === 'Member Coordinator',
+    canDeleteMemberProfile: isTopLevelAdmin,
+    canBulkCreateMembers: isTopLevelAdmin,
+    canResetPasswords: isTopLevelAdmin,
+    canCreateTeams: isTopLevelAdmin,
+    canAssignTasks: isTopLevelAdmin || ['Research Head', 'Event Coordinator', 'Secretary', 'Member Coordinator', 'Teacher', 'Faculty'].includes(role),
+    canSuspendDeactivate: isTopLevelAdmin,
+    canRemoveAccess: isTopLevelAdmin,
+    canApproveApplications: isTopLevelAdmin || role === 'Member Coordinator',
+    canIssueCertificates: isTopLevelAdmin,
+    canViewAuditLogs: isTopLevelAdmin,
+    canManageClubSettings: isTopLevelAdmin,
+    canManagePermissions: isTopLevelAdmin,
+    canReviewSubmissions: isTopLevelAdmin || ['Research Head', 'Event Coordinator', 'Secretary', 'Member Coordinator', 'Teacher', 'Faculty'].includes(role)
   } : {};
 
   const safeUser = currentUser ? {

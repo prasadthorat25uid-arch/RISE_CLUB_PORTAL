@@ -106,13 +106,13 @@ export const Navbar = ({ activeTab, setActiveTab }) => {
                 <button
                   onClick={() => {
                     const role = currentUser?.role;
-                    if (role === 'President') setActiveTab('dashboard-president');
-                    else if (role === 'Research Head') setActiveTab('dashboard-research');
+                    if (role === 'Faculty Coordinator' || role === 'President' || role === 'Vice President') {
+                      setActiveTab('dashboard-admin');
+                    } else if (role === 'Research Head') setActiveTab('dashboard-research');
                     else if (role === 'Event Coordinator') setActiveTab('dashboard-events');
                     else if (role === 'Social Media & Publicity Head') setActiveTab('dashboard-social');
                     else if (role === 'Secretary') setActiveTab('dashboard-secretary');
                     else if (role === 'Member Coordinator') setActiveTab('dashboard-members');
-                    else if (role === 'Faculty Coordinator') setActiveTab('dashboard-faculty');
                     else setActiveTab('dashboard-member');
                   }}
                   className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-800/90 text-amber-400 hover:bg-slate-700 border border-slate-700/80 transition-all"

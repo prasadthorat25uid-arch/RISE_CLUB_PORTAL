@@ -75,6 +75,7 @@ export const Home = ({ setActiveTab }) => {
   // Leadership hierarchy dynamically resolved from database
   const facultyLead = (data.users || []).find(u => u.role === 'Faculty Coordinator');
   const presidentLead = (data.users || []).find(u => u.role === 'President');
+  const vpLead = (data.users || []).find(u => u.role === 'Vice President');
   const researchHead = (data.users || []).find(u => u.role === 'Research Head');
   const eventCoord = (data.users || []).find(u => u.role === 'Event Coordinator');
   const socialHead = (data.users || []).find(u => u.role === 'Social Media & Publicity Head');
@@ -84,9 +85,10 @@ export const Home = ({ setActiveTab }) => {
   // Target Dashboard for authenticated user
   const getDashboardTarget = () => {
     if (!currentUser) return 'dashboard-member';
+    if (currentUser.role === 'Faculty Coordinator' || currentUser.role === 'President' || currentUser.role === 'Vice President') {
+      return 'dashboard-admin';
+    }
     switch (currentUser.role) {
-      case 'Faculty Coordinator': return 'dashboard-faculty';
-      case 'President': return 'dashboard-president';
       case 'Research Head': return 'dashboard-research';
       case 'Event Coordinator': return 'dashboard-events';
       case 'Social Media & Publicity Head': return 'dashboard-social';
@@ -1412,9 +1414,140 @@ export const Home = ({ setActiveTab }) => {
 
       </section>
 
+      {/* ─────────────────────────────────────────────────────────────
+          14. EXECUTIVE LEADERSHIP & SOCIETY DIRECTORATE
+          ───────────────────────────────────────────────────────────── */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        <div className="text-center max-w-3xl mx-auto space-y-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-wider">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>Institutional Governance</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-white font-outfit">
+            Executive Leadership & Directorate
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-400">
+            Supervised by Department Faculty and co-led by Student Executive Leadership with Equal Administrative Authority.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          {/* Faculty Coordinator */}
+          {facultyLead && (
+            <div className="glass-panel p-6 rounded-3xl border-2 border-purple-500/40 space-y-4 hover:border-purple-400 transition-all flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-purple-400 uppercase tracking-wider bg-purple-950/80 px-2.5 py-0.5 rounded-full border border-purple-500/30">
+                    Faculty Coordinator
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-mono">Supervisory Authority</span>
+                </div>
+                <div className="flex items-center gap-3.5">
+                  <Avatar 
+                    src={facultyLead.photo} 
+                    name={facultyLead.name} 
+                    size="xl" 
+                    className="w-16 h-16 rounded-2xl border-2 border-purple-400/60 shadow-lg shrink-0" 
+                  />
+                  <div>
+                    <h3 className="text-base font-bold text-white font-outfit">{facultyLead.name}</h3>
+                    <p className="text-xs text-purple-300">{facultyLead.department} | {facultyLead.division}</p>
+                  </div>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed line-clamp-3">{facultyLead.bio}</p>
+              </div>
+              <button
+                onClick={() => navigateToMember(facultyLead.id)}
+                className="w-full py-2 px-3 rounded-xl bg-purple-950/60 hover:bg-purple-600 hover:text-white text-purple-300 border border-purple-500/40 text-xs font-bold flex items-center justify-center gap-1.5 transition-all group"
+              >
+                <span>View Public Profile</span>
+                <ExternalLink className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+              </button>
+            </div>
+          )}
+
+          {/* President */}
+          {presidentLead && (
+            <div className="glass-panel p-6 rounded-3xl border-2 border-amber-500/40 space-y-4 hover:border-amber-400 transition-all flex flex-col justify-between bg-gradient-to-br from-amber-950/20 to-slate-900">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider bg-amber-950/80 px-2.5 py-0.5 rounded-full border border-amber-500/30">
+                    President
+                  </span>
+                  <span className="text-[10px] text-amber-300 font-mono">Student Executive Lead</span>
+                </div>
+                <div className="flex items-center gap-3.5">
+                  <Avatar 
+                    src={presidentLead.photo} 
+                    name={presidentLead.name} 
+                    size="xl" 
+                    className="w-16 h-16 rounded-2xl border-2 border-amber-400/60 shadow-lg shrink-0" 
+                  />
+                  <div>
+                    <h3 className="text-base font-bold text-white font-outfit">{presidentLead.name}</h3>
+                    <p className="text-xs text-amber-300">{presidentLead.department} ({presidentLead.academicYear})</p>
+                  </div>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed line-clamp-3">{presidentLead.bio}</p>
+              </div>
+              <button
+                onClick={() => navigateToMember(presidentLead.id)}
+                className="w-full py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 border border-amber-400 text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-md group"
+              >
+                <span>View Public Profile</span>
+                <ExternalLink className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+              </button>
+            </div>
+          )}
+
+          {/* Vice President */}
+          {vpLead && (
+            <div className="glass-panel p-6 rounded-3xl border-2 border-emerald-500/40 space-y-4 hover:border-emerald-400 transition-all flex flex-col justify-between bg-gradient-to-br from-emerald-950/20 to-slate-900">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider bg-emerald-950/80 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
+                    Vice President
+                  </span>
+                  <span className="text-[10px] text-emerald-300 font-mono">Equal Executive Lead</span>
+                </div>
+                <div className="flex items-center gap-3.5">
+                  <Avatar 
+                    src={vpLead.photo} 
+                    name={vpLead.name} 
+                    size="xl" 
+                    className="w-16 h-16 rounded-2xl border-2 border-emerald-400/60 shadow-lg shrink-0" 
+                  />
+                  <div>
+                    <h3 className="text-base font-bold text-white font-outfit">{vpLead.name}</h3>
+                    <p className="text-xs text-emerald-300">{vpLead.department} ({vpLead.academicYear})</p>
+                  </div>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed line-clamp-3">{vpLead.bio}</p>
+              </div>
+              <button
+                onClick={() => navigateToMember(vpLead.id)}
+                className="w-full py-2 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 border border-emerald-400 text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-md group"
+              >
+                <span>View Public Profile</span>
+                <ExternalLink className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="text-center pt-2">
+          <button
+            onClick={() => setActiveTab('team')}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 hover:text-amber-300 border border-slate-700/80 text-xs font-bold transition-all shadow-sm"
+          >
+            <span>Explore Complete Organizational Roster & Wings</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          14. BUILDING A CULTURE OF RESEARCH (INSTITUTIONAL BANNER)
+          15. BUILDING A CULTURE OF RESEARCH (INSTITUTIONAL BANNER)
           ───────────────────────────────────────────────────────────── */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="glass-panel p-8 sm:p-10 rounded-3xl border border-slate-800 bg-slate-900/80 space-y-6">

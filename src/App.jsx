@@ -18,7 +18,7 @@ import { ContactPage } from './pages/public/ContactPage';
 import { JoinRisePage } from './pages/public/JoinRisePage';
 import { LoginPage } from './pages/public/LoginPage';
 
-// Admin & Role Dashboards
+import { TopLevelAdminDashboard } from './pages/admin/TopLevelAdminDashboard';
 import { FacultyDashboard } from './pages/admin/FacultyDashboard';
 import { PresidentDashboard } from './pages/admin/PresidentDashboard';
 import { ResearchHeadDashboard } from './pages/admin/ResearchHeadDashboard';
@@ -54,8 +54,7 @@ const AppContent = () => {
     // Support erp/ prefix mapping directly to dedicated role dashboards
     if (hash.startsWith('erp/')) {
       const sub = hash.replace('erp/', '').toLowerCase();
-      if (sub === 'faculty') hash = 'dashboard-faculty';
-      else if (sub === 'president') hash = 'dashboard-president';
+      if (sub === 'faculty' || sub === 'president' || sub === 'vp' || sub === 'admin') hash = 'dashboard-admin';
       else if (sub === 'research') hash = 'dashboard-research';
       else if (sub === 'events') hash = 'dashboard-events';
       else if (sub === 'publicity' || sub === 'social') hash = 'dashboard-social';
@@ -99,7 +98,7 @@ const AppContent = () => {
   }, []);
 
   const isPrivateRoute = [
-    'dashboard-faculty', 'dashboard-president', 'dashboard-research',
+    'dashboard-admin', 'dashboard-vp', 'dashboard-faculty', 'dashboard-president', 'dashboard-research',
     'dashboard-events', 'dashboard-social', 'dashboard-secretary',
     'dashboard-members', 'dashboard-member', 'dashboard-pres-vp',
     'dashboard', 'erp',
@@ -110,11 +109,13 @@ const AppContent = () => {
 
   const getDashboardForRole = (r) => {
     switch (r) {
-      case 'Faculty Coordinator': return 'erp/faculty';
-      case 'President': return 'erp/president';
+      case 'Faculty Coordinator':
+      case 'President':
+      case 'Vice President':
+        return 'erp/admin';
       case 'Research Head': return 'erp/research';
       case 'Event Coordinator': return 'erp/events';
-      case 'Social Media & Publicity Head': return 'erp/publicity';
+      case 'Social Media & Publicity Head': return 'erp/social';
       case 'Secretary': return 'erp/secretary';
       case 'Member Coordinator': return 'erp/members';
       default: return 'erp/member';
@@ -168,19 +169,29 @@ const AppContent = () => {
         return <TasksPage setActiveTab={setActiveTab} />;
       case 'dashboard':
       case 'erp':
-        const targetDash = getDashboardForRole(role);
+        if (permissions?.isTopLevelAdmin) {
+          return <TopLevelAdminDashboard setActiveTab={setActiveTab} />;
+        }
         return <RiseMemberDashboard setActiveTab={setActiveTab} />;
+
+      // Top-Level Unified Admin Dashboard (Equal Authority: Faculty = President = Vice President)
+      case 'dashboard-admin':
+      case 'dashboard-vp':
+        if (!permissions?.isTopLevelAdmin) {
+          return <UnauthorizedPage setActiveTab={setActiveTab} requestedPath="/erp/admin" />;
+        }
+        return <TopLevelAdminDashboard setActiveTab={setActiveTab} />;
 
       // Dedicated Role Portals (Guarded)
       case 'dashboard-faculty':
-        if (role !== 'Faculty Coordinator') {
+        if (!permissions?.isTopLevelAdmin) {
           return <UnauthorizedPage setActiveTab={setActiveTab} requestedPath="/dashboard/faculty" />;
         }
         return <FacultyDashboard setActiveTab={setActiveTab} />;
 
       case 'dashboard-president':
       case 'dashboard-pres-vp':
-        if (role !== 'President' && role !== 'Faculty Coordinator') {
+        if (!permissions?.isTopLevelAdmin) {
           return <UnauthorizedPage setActiveTab={setActiveTab} requestedPath="/dashboard/president" />;
         }
         return <PresidentDashboard setActiveTab={setActiveTab} />;

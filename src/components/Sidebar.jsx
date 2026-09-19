@@ -30,9 +30,8 @@ export const Sidebar = ({ activeTab, setActiveTab, isOpen, onClose }) => {
 
   const getRoleDashboardTab = () => {
     if (!currentUser) return 'dashboard-member';
+    if (permissions?.isTopLevelAdmin) return 'dashboard-admin';
     switch (currentUser.role) {
-      case 'Faculty Coordinator': return 'dashboard-faculty';
-      case 'President': return 'dashboard-president';
       case 'Research Head': return 'dashboard-research';
       case 'Event Coordinator': return 'dashboard-events';
       case 'Social Media & Publicity Head': return 'dashboard-social';
@@ -42,79 +41,133 @@ export const Sidebar = ({ activeTab, setActiveTab, isOpen, onClose }) => {
     }
   };
 
-  const navItems = [
-    {
-      key: getRoleDashboardTab(),
-      label: 'My Dashboard',
-      icon: LayoutDashboard,
-      requiresAuth: true
-    },
-    {
-      key: 'tasks',
-      label: 'My Tasks',
-      icon: CheckSquare,
-      requiresAuth: true
-    },
-    ...(permissions?.canAssignTasks ? [
+  let navItems = [];
+
+  if (permissions?.isTopLevelAdmin) {
+    navItems = [
       {
-        key: 'manage-tasks',
-        label: 'Task Oversight',
-        icon: ClipboardList,
+        key: 'dashboard-admin',
+        label: 'Admin Directorate',
+        icon: LayoutDashboard,
         requiresAuth: true
-      }
-    ] : []),
-    ...(permissions?.canManageMembers ? [
+      },
       {
         key: 'manage-members',
         label: 'Manage Members',
         icon: Users,
         requiresAuth: true
-      }
-    ] : [
+      },
       {
         key: 'team',
-        label: 'Members',
-        icon: Users,
+        label: 'Leadership Roster',
+        icon: ShieldCheck,
         requiresAuth: false
+      },
+      {
+        key: 'manage-tasks',
+        label: 'Task Oversight & Review',
+        icon: ClipboardList,
+        requiresAuth: true
+      },
+      {
+        key: 'research',
+        label: 'Research Hub',
+        icon: BookOpen,
+        requiresAuth: false
+      },
+      {
+        key: 'projects',
+        label: 'Project Portfolio',
+        icon: Layers,
+        requiresAuth: false
+      },
+      {
+        key: 'publications',
+        label: 'Publications & Papers',
+        icon: BookOpen,
+        requiresAuth: false
+      },
+      {
+        key: 'events',
+        label: 'Event Coordination',
+        icon: Calendar,
+        requiresAuth: false
+      },
+      {
+        key: 'achievements',
+        label: 'Achievements',
+        icon: Award,
+        requiresAuth: false
+      },
+      {
+        key: 'issue-certificates',
+        label: 'Issue Certificates',
+        icon: Award,
+        requiresAuth: true
+      },
+      {
+        key: 'manage-announcements',
+        label: 'Announcements',
+        icon: Megaphone,
+        requiresAuth: true
+      },
+      {
+        key: 'notifications',
+        label: 'Society Notifications',
+        icon: Bell,
+        requiresAuth: true
+      },
+      {
+        key: 'profile',
+        label: 'Executive Profile',
+        icon: User,
+        requiresAuth: true
       }
-    ]),
-    {
-      key: permissions?.isResearchHead ? 'dashboard-research' : 'research',
-      label: 'Research',
-      icon: BookOpen,
-      requiresAuth: false
-    },
-    {
-      key: 'projects',
-      label: 'Projects',
-      icon: Layers,
-      requiresAuth: false
-    },
-    {
-      key: permissions?.isEventCoordinator ? 'dashboard-events' : 'events',
-      label: 'Events',
-      icon: Calendar,
-      requiresAuth: false
-    },
-    {
-      key: (permissions?.isFaculty || permissions?.isPresident || permissions?.isSecretary || permissions?.isSocialHead) ? 'manage-announcements' : 'notifications',
-      label: (permissions?.isFaculty || permissions?.isPresident || permissions?.isSecretary || permissions?.isSocialHead) ? 'Announcements' : 'Notifications',
-      icon: (permissions?.isFaculty || permissions?.isPresident || permissions?.isSecretary || permissions?.isSocialHead) ? Megaphone : Bell,
-      requiresAuth: false
-    },
-    {
-      key: permissions?.canIssueCertificates ? 'issue-certificates' : 'achievements',
-      label: permissions?.canIssueCertificates ? 'Issue Certificates' : 'Certificates',
-      icon: Award,
-      requiresAuth: false
-    },
-    {
-      key: 'profile',
-      label: 'My Profile',
-      icon: User,
-      requiresAuth: true
-    }
-  ];
+    ];
+  } else if (currentUser?.role === 'Research Head') {
+    navItems = [
+      { key: 'dashboard-research', label: 'Research Portal', icon: LayoutDashboard, requiresAuth: true },
+      { key: 'tasks', label: 'My Tasks', icon: CheckSquare, requiresAuth: true },
+      { key: 'manage-tasks', label: 'Task Oversight', icon: ClipboardList, requiresAuth: true },
+      { key: 'research', label: 'Research Projects', icon: BookOpen, requiresAuth: false },
+      { key: 'publications', label: 'Publications', icon: BookOpen, requiresAuth: false },
+      { key: 'projects', label: 'Projects', icon: Layers, requiresAuth: false },
+      { key: 'notifications', label: 'Notifications', icon: Bell, requiresAuth: true },
+      { key: 'profile', label: 'My Profile', icon: User, requiresAuth: true }
+    ];
+  } else if (currentUser?.role === 'Event Coordinator') {
+    navItems = [
+      { key: 'dashboard-events', label: 'Events Portal', icon: LayoutDashboard, requiresAuth: true },
+      { key: 'tasks', label: 'My Tasks', icon: CheckSquare, requiresAuth: true },
+      { key: 'manage-tasks', label: 'Task Oversight', icon: ClipboardList, requiresAuth: true },
+      { key: 'events', label: 'Events Hub', icon: Calendar, requiresAuth: false },
+      { key: 'projects', label: 'Projects', icon: Layers, requiresAuth: false },
+      { key: 'notifications', label: 'Notifications', icon: Bell, requiresAuth: true },
+      { key: 'profile', label: 'My Profile', icon: User, requiresAuth: true }
+    ];
+  } else if (currentUser?.role === 'Member Coordinator') {
+    navItems = [
+      { key: 'dashboard-members', label: 'Member Portal', icon: LayoutDashboard, requiresAuth: true },
+      { key: 'manage-members', label: 'Manage Members', icon: Users, requiresAuth: true },
+      { key: 'tasks', label: 'My Tasks', icon: CheckSquare, requiresAuth: true },
+      { key: 'team', label: 'Roster', icon: Users, requiresAuth: false },
+      { key: 'notifications', label: 'Notifications', icon: Bell, requiresAuth: true },
+      { key: 'profile', label: 'My Profile', icon: User, requiresAuth: true }
+    ];
+  } else {
+    // Default Student / RISE Club Member
+    navItems = [
+      { key: 'dashboard-member', label: 'My ERP Dashboard', icon: LayoutDashboard, requiresAuth: true },
+      { key: 'profile', label: 'My Private Profile', icon: User, requiresAuth: true },
+      { key: 'tasks', label: 'My Tasks & Submissions', icon: CheckSquare, requiresAuth: true },
+      { key: 'research', label: 'Research Hub', icon: BookOpen, requiresAuth: false },
+      { key: 'projects', label: 'Projects', icon: Layers, requiresAuth: false },
+      { key: 'publications', label: 'Publications', icon: BookOpen, requiresAuth: false },
+      { key: 'events', label: 'Events & Symposia', icon: Calendar, requiresAuth: false },
+      { key: 'achievements', label: 'My Achievements & Badges', icon: Award, requiresAuth: false },
+      { key: 'notifications', label: 'Society Notifications', icon: Bell, requiresAuth: true }
+    ];
+  }
 
   return (
     <aside className={`

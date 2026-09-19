@@ -21,12 +21,21 @@ export const DataProvider = ({ children }) => {
     if (local) {
       try {
         const parsed = JSON.parse(local);
-        return {
+        const merged = {
           ...initialSeedData,
           ...parsed,
           notifications: parsed.notifications?.length ? parsed.notifications : (initialSeedData.notifications || []),
           auditLogs: parsed.auditLogs?.length ? parsed.auditLogs : (initialSeedData.auditLogs || [])
         };
+        if (merged.users) {
+          merged.users = merged.users.map(u => {
+            if (u.id === 'usr-vp-1' && u.role !== 'Vice President') {
+              return { ...u, role: 'Vice President', roleGroup: 'student_leadership' };
+            }
+            return u;
+          });
+        }
+        return merged;
       } catch (e) {
         console.error("Failed to parse local storage data, resetting to seed data", e);
       }
