@@ -18,9 +18,16 @@ export const DashboardShell = ({ children, activeTab, setActiveTab }) => {
 
   const getPageTitle = (tab) => {
     switch (tab) {
-      case 'dashboard-faculty': return 'Faculty Coordinator Dashboard';
-      case 'dashboard-pres-vp': return 'Executive Leadership Dashboard';
-      case 'dashboard-member': return 'Member Research Dashboard';
+      case 'dashboard-faculty': return 'Faculty Coordinator Supervisory Portal';
+      case 'dashboard-president': return 'President Executive Leadership Portal';
+      case 'dashboard-research': return 'Research Head & Publications Management';
+      case 'dashboard-events': return 'Event Coordinator & Operations Portal';
+      case 'dashboard-social': return 'Social Media & Publicity Hub';
+      case 'dashboard-secretary': return 'Secretary Documentation & Governance';
+      case 'dashboard-members': return 'Member Coordinator & Candidate Pipeline';
+      case 'dashboard-member': return 'RISE Club Member Research Portal';
+      case 'profile': return 'User Profile & Credentials';
+      case 'notifications': return 'Society Notifications & Bulletins';
       case 'manage-members': return 'Member Lifecycle Management';
       case 'create-members': return 'Onboard & Create Member Accounts';
       case 'manage-teams': return 'Research Teams & Clusters';

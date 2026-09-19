@@ -59,14 +59,16 @@ export const Navbar = ({ activeTab, setActiveTab }) => {
             onClick={() => setActiveTab('home')}
             className="flex items-center gap-3 cursor-pointer group"
           >
-            <div className="relative p-2.5 rounded-2xl bg-gradient-to-br from-amber-500 via-orange-500 to-rose-600 text-slate-950 shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-all">
-              <Sun className="w-7 h-7 animate-pulse" />
-            </div>
+            <img 
+              src="./rise-logo.png" 
+              alt="RISE Logo" 
+              className="w-10 h-10 object-contain rounded-xl border border-amber-500/40 shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform" 
+            />
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-2xl font-black tracking-tight text-white font-outfit">RISE</span>
-                <span className="text-xs px-2 py-0.5 rounded-full font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
-                  2026-2027
+                <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                  Sanjivani Univ
                 </span>
               </div>
               <p className="text-[11px] font-medium text-slate-400 leading-none mt-0.5">
@@ -100,15 +102,21 @@ export const Navbar = ({ activeTab, setActiveTab }) => {
               <>
                 <button
                   onClick={() => {
-                    if (permissions.isFaculty) setActiveTab('dashboard-faculty');
-                    else if (permissions.isEqualLeadership) setActiveTab('dashboard-pres-vp');
+                    const role = currentUser?.role;
+                    if (role === 'President') setActiveTab('dashboard-president');
+                    else if (role === 'Research Head') setActiveTab('dashboard-research');
+                    else if (role === 'Event Coordinator') setActiveTab('dashboard-events');
+                    else if (role === 'Social Media & Publicity Head') setActiveTab('dashboard-social');
+                    else if (role === 'Secretary') setActiveTab('dashboard-secretary');
+                    else if (role === 'Member Coordinator') setActiveTab('dashboard-members');
+                    else if (role === 'Faculty Coordinator') setActiveTab('dashboard-faculty');
                     else setActiveTab('dashboard-member');
                   }}
                   className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-800/90 text-amber-400 hover:bg-slate-700 border border-slate-700/80 transition-all"
                 >
                   <LayoutDashboard className="w-4 h-4 text-amber-400" />
                   <span>
-                    {permissions.isFaculty ? 'Faculty Portal' : (permissions.isEqualLeadership ? 'Leadership Portal' : 'Member Dashboard')}
+                    {currentUser?.role || 'My Dashboard'}
                   </span>
                 </button>
 

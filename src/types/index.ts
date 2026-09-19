@@ -6,14 +6,11 @@
 export type RoleType =
   | 'Faculty Coordinator'
   | 'President'
-  | 'Vice President'
   | 'Research Head'
   | 'Event Coordinator'
-  | 'Secretary'
-  | 'Secretary + Event Coordinator'
   | 'Social Media & Publicity Head'
+  | 'Secretary'
   | 'Member Coordinator'
-  | 'Discipline Member'
   | 'RISE Club Member'
   | 'Research Club Member'
   | 'Club Member';

@@ -19,7 +19,13 @@ import { LoginPage } from './pages/public/LoginPage';
 
 // Admin & Role Dashboards
 import { FacultyDashboard } from './pages/admin/FacultyDashboard';
-import { PresidentVPDashboard } from './pages/admin/PresidentVPDashboard';
+import { PresidentDashboard } from './pages/admin/PresidentDashboard';
+import { ResearchHeadDashboard } from './pages/admin/ResearchHeadDashboard';
+import { EventCoordinatorDashboard } from './pages/admin/EventCoordinatorDashboard';
+import { SocialMediaDashboard } from './pages/admin/SocialMediaDashboard';
+import { SecretaryDashboard } from './pages/admin/SecretaryDashboard';
+import { MemberCoordinatorDashboard } from './pages/admin/MemberCoordinatorDashboard';
+import { RiseMemberDashboard } from './pages/admin/RiseMemberDashboard';
 import { MemberDashboard } from './pages/admin/MemberDashboard';
 import { MemberManagement } from './pages/admin/MemberManagement';
 import { CreateMultipleMembers } from './pages/admin/CreateMultipleMembers';
@@ -28,16 +34,22 @@ import { TaskManagement } from './pages/admin/TaskManagement';
 import { ApplicationsManagement } from './pages/admin/ApplicationsManagement';
 import { CertificatesManagement } from './pages/admin/CertificatesManagement';
 import { AnnouncementsManagement } from './pages/admin/AnnouncementsManagement';
+import { ProfilePage } from './pages/public/ProfilePage';
+import { NotificationsPage } from './pages/public/NotificationsPage';
+import { UnauthorizedPage } from './pages/public/UnauthorizedPage';
 import { DashboardShell } from './components/DashboardShell';
 
 const AppContent = () => {
   const getTabFromHash = () => {
-    const hash = window.location.hash.replace(/^#\/?/, '').trim();
+    let hash = window.location.hash.replace(/^#\/?/, '').trim();
+    if (hash.startsWith('dashboard/')) {
+      hash = hash.replace('dashboard/', 'dashboard-');
+    }
     return hash || 'home';
   };
 
   const [activeTab, setActiveTabState] = useState(() => getTabFromHash());
-  const { isAuthenticated, permissions } = useAuth();
+  const { isAuthenticated, currentUser, permissions } = useAuth();
 
   const setActiveTab = (tab) => {
     window.location.hash = `#/${tab}`;
@@ -55,7 +67,10 @@ const AppContent = () => {
   }, []);
 
   const isPrivateRoute = [
-    'dashboard-faculty', 'dashboard-pres-vp', 'dashboard-member',
+    'dashboard-faculty', 'dashboard-president', 'dashboard-research',
+    'dashboard-events', 'dashboard-social', 'dashboard-secretary',
+    'dashboard-members', 'dashboard-member', 'dashboard-pres-vp',
+    'profile', 'notifications',
     'manage-members', 'create-members', 'manage-teams', 'manage-tasks',
     'manage-applications', 'issue-certificates', 'manage-announcements'
   ].includes(activeTab);
@@ -65,6 +80,8 @@ const AppContent = () => {
     if (isPrivateRoute && !isAuthenticated) {
       return <LoginPage setActiveTab={setActiveTab} />;
     }
+
+    const role = currentUser?.role;
 
     switch (activeTab) {
       // Public Pages
@@ -88,28 +105,96 @@ const AppContent = () => {
         return <JoinRisePage setActiveTab={setActiveTab} />;
       case 'login':
         return <LoginPage setActiveTab={setActiveTab} />;
+      case 'unauthorized':
+        return <UnauthorizedPage setActiveTab={setActiveTab} />;
 
-      // Private Role Portals (Guarded)
+      // Universal Authenticated Pages
+      case 'profile':
+        return <ProfilePage setActiveTab={setActiveTab} />;
+      case 'notifications':
+        return <NotificationsPage setActiveTab={setActiveTab} />;
+
+      // Dedicated Role Portals (Guarded)
       case 'dashboard-faculty':
+        if (role !== 'Faculty Coordinator') {
+          return <UnauthorizedPage setActiveTab={setActiveTab} requestedPath="/dashboard/faculty" />;
+        }
         return <FacultyDashboard setActiveTab={setActiveTab} />;
-      case 'dashboard-pres-vp':
-        return <PresidentVPDashboard setActiveTab={setActiveTab} />;
-      case 'dashboard-member':
-        return <MemberDashboard />;
 
-      // Private Management Pages (Guarded)
+      case 'dashboard-president':
+      case 'dashboard-pres-vp':
+        if (role !== 'President' && role !== 'Faculty Coordinator') {
+          return <UnauthorizedPage setActiveTab={setActiveTab} requestedPath="/dashboard/president" />;
+        }
+        return <PresidentDashboard setActiveTab={setActiveTab} />;
+
+      case 'dashboard-research':
+        if (role !== 'Research Head' && role !== 'President' && role !== 'Faculty Coordinator') {
+          return <UnauthorizedPage setActiveTab={setActiveTab} requestedPath="/dashboard/research" />;
+        }
+        return <ResearchHeadDashboard setActiveTab={setActiveTab} />;
+
+      case 'dashboard-events':
+        if (role !== 'Event Coordinator' && role !== 'Secretary' && role !== 'President' && role !== 'Faculty Coordinator') {
+          return <UnauthorizedPage setActiveTab={setActiveTab} requestedPath="/dashboard/events" />;
+        }
+        return <EventCoordinatorDashboard setActiveTab={setActiveTab} />;
+
+      case 'dashboard-social':
+        if (role !== 'Social Media & Publicity Head' && role !== 'President' && role !== 'Faculty Coordinator') {
+          return <UnauthorizedPage setActiveTab={setActiveTab} requestedPath="/dashboard/social" />;
+        }
+        return <SocialMediaDashboard setActiveTab={setActiveTab} />;
+
+      case 'dashboard-secretary':
+        if (role !== 'Secretary' && role !== 'President' && role !== 'Faculty Coordinator') {
+          return <UnauthorizedPage setActiveTab={setActiveTab} requestedPath="/dashboard/secretary" />;
+        }
+        return <SecretaryDashboard setActiveTab={setActiveTab} />;
+
+      case 'dashboard-members':
+        if (role !== 'Member Coordinator' && role !== 'President' && role !== 'Faculty Coordinator') {
+          return <UnauthorizedPage setActiveTab={setActiveTab} requestedPath="/dashboard/members" />;
+        }
+        return <MemberCoordinatorDashboard setActiveTab={setActiveTab} />;
+
+      case 'dashboard-member':
+        return <RiseMemberDashboard setActiveTab={setActiveTab} />;
+
+      // Administrative Management Pages (Guarded)
       case 'manage-members':
+        if (!permissions?.canManageMembers) {
+          return <UnauthorizedPage setActiveTab={setActiveTab} requestedPath="/manage-members" />;
+        }
         return <MemberManagement setActiveTab={setActiveTab} />;
+
       case 'create-members':
+        if (!permissions?.canCreateMemberProfile) {
+          return <UnauthorizedPage setActiveTab={setActiveTab} requestedPath="/create-members" />;
+        }
         return <CreateMultipleMembers />;
+
       case 'manage-teams':
+        if (!permissions?.canCreateTeams) {
+          return <UnauthorizedPage setActiveTab={setActiveTab} requestedPath="/manage-teams" />;
+        }
         return <TeamManagement />;
+
       case 'manage-tasks':
         return <TaskManagement />;
+
       case 'manage-applications':
+        if (!permissions?.canApproveApplications) {
+          return <UnauthorizedPage setActiveTab={setActiveTab} requestedPath="/manage-applications" />;
+        }
         return <ApplicationsManagement />;
+
       case 'issue-certificates':
+        if (!permissions?.canIssueCertificates) {
+          return <UnauthorizedPage setActiveTab={setActiveTab} requestedPath="/issue-certificates" />;
+        }
         return <CertificatesManagement />;
+
       case 'manage-announcements':
         return <AnnouncementsManagement />;
 

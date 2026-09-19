@@ -8,14 +8,20 @@ export const TeamPage = () => {
 
   const faculty = data.users.find(u => u.role === 'Faculty Coordinator');
   const president = data.users.find(u => u.role === 'President');
-  const vicePresident = data.users.find(u => u.role === 'Vice President');
+  const researchHead = data.users.find(u => u.role === 'Research Head');
+  const memberCoordinators = data.users.filter(u => u.role === 'Member Coordinator');
+  const eventCoordinators = data.users.filter(u => u.role === 'Event Coordinator');
+  const secretary = data.users.find(u => u.role === 'Secretary');
+  const socialHeads = data.users.filter(u => u.role === 'Social Media & Publicity Head');
 
-  const researchClubMembers = data.users.filter(u => u.role === 'Research Club Member' || u.role === 'Club Member');
+  const researchClubMembers = data.users.filter(u => 
+    u.role === 'RISE Club Member' || u.role === 'Research Club Member' || u.role === 'Club Member'
+  );
 
   const filteredMembers = researchClubMembers.filter(m => {
     return m.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-           m.memberId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-           m.prn.toLowerCase().includes(searchTerm.toLowerCase());
+           m.memberId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+           m.prn?.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
   return (
@@ -31,123 +37,161 @@ export const TeamPage = () => {
         </p>
       </div>
 
-      {/* 1. FACULTY COORDINATOR */}
-      <div className="space-y-4">
-        <div className="text-center">
-          <span className="text-xs font-bold uppercase tracking-widest text-purple-400 bg-purple-950/60 border border-purple-500/40 px-4 py-1 rounded-full">
-            Faculty Coordinator (Overall Supervision)
-          </span>
-        </div>
-
+      {/* 1. FACULTY COORDINATOR & PRESIDENT LEADERSHIP */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+        
+        {/* Faculty Coordinator */}
         {faculty && (
-          <div className="max-w-xl mx-auto glass-panel p-6 rounded-3xl border-2 border-purple-500/50 shadow-2xl relative overflow-hidden">
-            <div className="flex flex-col sm:flex-row items-center gap-6">
-              <img src={faculty.photo} alt={faculty.name} className="w-24 h-24 rounded-2xl object-cover border-2 border-purple-400/60 shadow-lg" />
-              <div className="text-center sm:text-left space-y-1">
-                <span className="text-[10px] font-bold text-purple-400 uppercase tracking-wider">FACULTY COORDINATOR</span>
-                <h3 className="text-xl font-bold text-white">{faculty.name}</h3>
-                <p className="text-xs text-slate-300 font-medium">{faculty.department} | {faculty.division}</p>
-                <p className="text-xs text-slate-400 pt-1 leading-relaxed">{faculty.bio}</p>
+          <div className="glass-panel p-6 rounded-3xl border-2 border-purple-500/50 shadow-2xl relative overflow-hidden flex flex-col justify-between">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold text-purple-400 uppercase tracking-wider bg-purple-950/80 px-3 py-1 rounded-full border border-purple-500/30">
+                  FACULTY COORDINATOR
+                </span>
+                <span className="text-[10px] text-slate-400 font-mono">Supervisory Authority</span>
               </div>
+              <div className="flex items-center gap-4">
+                <img src={faculty.photo} alt={faculty.name} className="w-20 h-20 rounded-2xl object-cover border-2 border-purple-400/60 shadow-lg shrink-0" />
+                <div>
+                  <h3 className="text-lg font-bold text-white font-outfit">{faculty.name}</h3>
+                  <p className="text-xs text-purple-300 font-medium">{faculty.department} | {faculty.division}</p>
+                  <p className="text-[11px] text-slate-400 font-mono mt-0.5">{faculty.email}</p>
+                </div>
+              </div>
+              <p className="text-xs text-slate-300 leading-relaxed">{faculty.bio}</p>
             </div>
           </div>
         )}
-      </div>
 
-      {/* 2. EQUAL STUDENT LEADERSHIP - PRESIDENT & VICE PRESIDENT (SIDE-BY-SIDE EQUAL CARDS) */}
-      <div className="space-y-4">
-        <div className="text-center">
-          <span className="text-xs font-bold uppercase tracking-widest text-amber-400 bg-amber-950/60 border border-amber-500/40 px-4 py-1 rounded-full">
-            Equal Student Leadership Status
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-          
-          {/* President Card: Ayushi Didi */}
-          {president && (
-            <div className="glass-panel p-6 rounded-3xl border-2 border-amber-500/50 shadow-xl space-y-4 relative">
-              <div className="absolute top-4 right-4 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500 text-slate-950">
-                EQUAL LEADERSHIP
+        {/* President */}
+        {president && (
+          <div className="glass-panel p-6 rounded-3xl border-2 border-amber-500/50 shadow-2xl relative overflow-hidden flex flex-col justify-between bg-gradient-to-br from-amber-950/30 to-slate-900">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider bg-amber-950/80 px-3 py-1 rounded-full border border-amber-500/30">
+                  PRESIDENT
+                </span>
+                <span className="text-[10px] text-amber-300 font-mono">Student Executive Lead</span>
               </div>
               <div className="flex items-center gap-4">
-                <img src={president.photo} alt={president.name} className="w-20 h-20 rounded-2xl object-cover border border-amber-400/60 shadow-md" />
+                <img src={president.photo} alt={president.name} className="w-20 h-20 rounded-2xl object-cover border-2 border-amber-400/60 shadow-lg shrink-0" />
                 <div>
-                  <span className="text-[11px] font-bold text-amber-400 uppercase tracking-wider block">PRESIDENT</span>
-                  <h3 className="text-lg font-bold text-white">{president.name}</h3>
-                  <p className="text-xs text-slate-300">{president.department} | {president.academicYear}</p>
-                  <p className="text-[11px] text-amber-400 font-mono">Member ID: {president.memberId}</p>
+                  <h3 className="text-lg font-bold text-white font-outfit">{president.name}</h3>
+                  <p className="text-xs text-amber-300 font-medium">{president.department} ({president.academicYear})</p>
+                  <p className="text-[11px] text-slate-400 font-mono mt-0.5">{president.email}</p>
                 </div>
               </div>
-              <p className="text-xs text-slate-400 leading-relaxed">{president.bio}</p>
+              <p className="text-xs text-slate-300 leading-relaxed">{president.bio}</p>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Vice President Card: Prasad */}
-          {vicePresident && (
-            <div className="glass-panel p-6 rounded-3xl border-2 border-amber-500/50 shadow-xl space-y-4 relative">
-              <div className="absolute top-4 right-4 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500 text-slate-950">
-                EQUAL LEADERSHIP
-              </div>
-              <div className="flex items-center gap-4">
-                <img src={vicePresident.photo} alt={vicePresident.name} className="w-20 h-20 rounded-2xl object-cover border border-amber-400/60 shadow-md" />
-                <div>
-                  <span className="text-[11px] font-bold text-amber-400 uppercase tracking-wider block">VICE PRESIDENT</span>
-                  <h3 className="text-lg font-bold text-white">{vicePresident.name}</h3>
-                  <p className="text-xs text-slate-300">{vicePresident.department} | {vicePresident.academicYear}</p>
-                  <p className="text-[11px] text-amber-400 font-mono">Member ID: {vicePresident.memberId}</p>
-                </div>
-              </div>
-              <p className="text-xs text-slate-400 leading-relaxed">{vicePresident.bio}</p>
-            </div>
-          )}
-
-        </div>
       </div>
 
-      {/* 3. CORE TEAM STRUCTURE */}
+      {/* 2. CORE FUNCTIONAL WINGS */}
       <div className="space-y-6">
         <div className="text-center">
           <span className="text-xs font-bold uppercase tracking-widest text-cyan-400 bg-cyan-950/60 border border-cyan-500/40 px-4 py-1 rounded-full">
-            Core Team Functional Wings
+            Core Leadership Officers & Wings
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-6xl mx-auto">
           
           {/* Research Head */}
-          <div className="glass-panel p-5 rounded-2xl border border-slate-800 space-y-2 hover:border-cyan-500/40 transition-all">
-            <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">RESEARCH HEAD</span>
-            <h4 className="text-base font-bold text-white">Shweta Didi & Ayushi Didi</h4>
+          <div className="glass-panel p-5 rounded-2xl border border-slate-800 space-y-3 hover:border-cyan-500/40 transition-all">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">RESEARCH HEAD</span>
+              <span className="text-[10px] text-slate-400 font-mono">Publications & Review</span>
+            </div>
+            {researchHead && (
+              <div className="flex items-center gap-3">
+                <img src={researchHead.photo} alt={researchHead.name} className="w-12 h-12 rounded-xl object-cover border border-cyan-400/40" />
+                <div>
+                  <h4 className="text-sm font-bold text-white">{researchHead.name}</h4>
+                  <p className="text-[11px] text-slate-400">{researchHead.department} ({researchHead.academicYear})</p>
+                </div>
+              </div>
+            )}
             <p className="text-xs text-slate-400">Overseeing paper publications, literature review frameworks, and research gap formulation.</p>
           </div>
 
-          {/* Secretary + Event Coordinator */}
-          <div className="glass-panel p-5 rounded-2xl border border-slate-800 space-y-2 hover:border-cyan-500/40 transition-all">
-            <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">SECRETARY + EVENT COORDINATOR</span>
-            <h4 className="text-base font-bold text-white">Sairaj Tambe, Sanskar Kulkarni & Sairaj Neware</h4>
-            <p className="text-xs text-slate-400">Managing national symposia, hands-on workshops, documentation archives, and event operations.</p>
-          </div>
-
-          {/* Social Media & Publicity Head */}
-          <div className="glass-panel p-5 rounded-2xl border border-slate-800 space-y-2 hover:border-cyan-500/40 transition-all">
-            <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">SOCIAL MEDIA & PUBLICITY HEAD</span>
-            <h4 className="text-base font-bold text-white">Ashutosh Hadave & Vedant Dathe</h4>
-            <p className="text-xs text-slate-400">Heading society media reach, technical branding, and research publication showcases.</p>
-          </div>
-
-          {/* Member Coordinator */}
-          <div className="glass-panel p-5 rounded-2xl border border-slate-800 space-y-2 hover:border-cyan-500/40 transition-all">
-            <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">MEMBER COORDINATOR</span>
-            <h4 className="text-base font-bold text-white">Vaishnavi, Ayushi Didi & Prasad</h4>
+          {/* Member Coordinators */}
+          <div className="glass-panel p-5 rounded-2xl border border-slate-800 space-y-3 hover:border-amber-500/40 transition-all">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">MEMBER COORDINATORS</span>
+              <span className="text-[10px] text-slate-400 font-mono">Interview & Onboarding</span>
+            </div>
+            <div className="space-y-2">
+              {memberCoordinators.map(m => (
+                <div key={m.id} className="flex items-center gap-3">
+                  <img src={m.photo} alt={m.name} className="w-10 h-10 rounded-xl object-cover border border-amber-400/40" />
+                  <div>
+                    <h4 className="text-xs font-bold text-white">{m.name}</h4>
+                    <p className="text-[10px] text-slate-400">{m.department} ({m.academicYear})</p>
+                  </div>
+                </div>
+              ))}
+            </div>
             <p className="text-xs text-slate-400">Coordinating student interview selection pipeline, member onboarding, and performance metrics.</p>
           </div>
 
-          {/* Discipline Member */}
-          <div className="glass-panel p-5 rounded-2xl border border-slate-800 space-y-2 hover:border-cyan-500/40 transition-all">
-            <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">DISCIPLINE MEMBER</span>
-            <h4 className="text-base font-bold text-white">Sanskar Kulkarni</h4>
-            <p className="text-xs text-slate-400">Overseeing club discipline, code of conduct, and task compliance during society sessions.</p>
+          {/* Event Coordinators */}
+          <div className="glass-panel p-5 rounded-2xl border border-slate-800 space-y-3 hover:border-cyan-500/40 transition-all">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">EVENT COORDINATORS</span>
+              <span className="text-[10px] text-slate-400 font-mono">Workshops & Symposia</span>
+            </div>
+            <div className="space-y-2">
+              {eventCoordinators.map(m => (
+                <div key={m.id} className="flex items-center gap-3">
+                  <img src={m.photo} alt={m.name} className="w-10 h-10 rounded-xl object-cover border border-cyan-400/40" />
+                  <div>
+                    <h4 className="text-xs font-bold text-white">{m.name}</h4>
+                    <p className="text-[10px] text-slate-400">{m.department} ({m.academicYear})</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-slate-400">Managing national symposia, hands-on workshops, venue arrangements, and event scheduling.</p>
+          </div>
+
+          {/* Secretary */}
+          <div className="glass-panel p-5 rounded-2xl border border-slate-800 space-y-3 hover:border-purple-500/40 transition-all">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold text-purple-400 uppercase tracking-wider">SECRETARY</span>
+              <span className="text-[10px] text-slate-400 font-mono">Records & Governance</span>
+            </div>
+            {secretary && (
+              <div className="flex items-center gap-3">
+                <img src={secretary.photo} alt={secretary.name} className="w-12 h-12 rounded-xl object-cover border border-purple-400/40" />
+                <div>
+                  <h4 className="text-sm font-bold text-white">{secretary.name}</h4>
+                  <p className="text-[11px] text-slate-400">{secretary.department} ({secretary.academicYear})</p>
+                </div>
+              </div>
+            )}
+            <p className="text-xs text-slate-400">Maintaining society governance records, meeting archives, and operational discipline.</p>
+          </div>
+
+          {/* Social Media & Publicity Heads */}
+          <div className="glass-panel p-5 rounded-2xl border border-slate-800 space-y-3 hover:border-orange-500/40 transition-all sm:col-span-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold text-orange-400 uppercase tracking-wider">SOCIAL MEDIA & PUBLICITY HEADS</span>
+              <span className="text-[10px] text-slate-400 font-mono">Branding & Media Reach</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {socialHeads.map(m => (
+                <div key={m.id} className="flex items-center gap-3">
+                  <img src={m.photo} alt={m.name} className="w-10 h-10 rounded-xl object-cover border border-orange-400/40" />
+                  <div>
+                    <h4 className="text-xs font-bold text-white">{m.name}</h4>
+                    <p className="text-[10px] text-slate-400">{m.department} ({m.academicYear})</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-slate-400">Heading society media reach, technical branding, and research publication spotlights.</p>
           </div>
 
         </div>

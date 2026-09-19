@@ -24,15 +24,29 @@ export const Sidebar = ({ activeTab, setActiveTab, isOpen, onClose }) => {
     if (onClose) onClose();
   };
 
+  const getRoleDashboardTab = () => {
+    if (!currentUser) return 'dashboard-member';
+    switch (currentUser.role) {
+      case 'Faculty Coordinator': return 'dashboard-faculty';
+      case 'President': return 'dashboard-president';
+      case 'Research Head': return 'dashboard-research';
+      case 'Event Coordinator': return 'dashboard-events';
+      case 'Social Media & Publicity Head': return 'dashboard-social';
+      case 'Secretary': return 'dashboard-secretary';
+      case 'Member Coordinator': return 'dashboard-members';
+      default: return 'dashboard-member';
+    }
+  };
+
   const navItems = [
     {
-      key: permissions?.isFaculty ? 'dashboard-faculty' : (permissions?.isEqualLeadership ? 'dashboard-pres-vp' : 'dashboard-member'),
-      label: 'Dashboard',
+      key: getRoleDashboardTab(),
+      label: 'My Dashboard',
       icon: LayoutDashboard,
       requiresAuth: true
     },
     {
-      key: 'research',
+      key: permissions?.isResearchHead ? 'dashboard-research' : 'research',
       label: 'Research',
       icon: BookOpen,
       requiresAuth: false
@@ -44,7 +58,7 @@ export const Sidebar = ({ activeTab, setActiveTab, isOpen, onClose }) => {
       requiresAuth: false
     },
     {
-      key: 'events',
+      key: permissions?.isEventCoordinator ? 'dashboard-events' : 'events',
       label: 'Events',
       icon: Calendar,
       requiresAuth: false
@@ -56,7 +70,7 @@ export const Sidebar = ({ activeTab, setActiveTab, isOpen, onClose }) => {
       requiresAuth: false
     },
     {
-      key: permissions?.isFaculty || permissions?.isEqualLeadership ? 'manage-announcements' : 'home',
+      key: (permissions?.isFaculty || permissions?.isPresident || permissions?.isSecretary || permissions?.isSocialHead) ? 'manage-announcements' : 'notifications',
       label: 'Announcements',
       icon: Megaphone,
       requiresAuth: false
@@ -68,8 +82,8 @@ export const Sidebar = ({ activeTab, setActiveTab, isOpen, onClose }) => {
       requiresAuth: false
     },
     {
-      key: 'dashboard-member',
-      label: 'Profile',
+      key: 'profile',
+      label: 'My Profile',
       icon: User,
       requiresAuth: true
     }

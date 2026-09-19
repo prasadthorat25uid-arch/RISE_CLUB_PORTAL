@@ -73,9 +73,9 @@ export const About = () => {
           <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-400 w-fit">
             <Award className="w-6 h-6" />
           </div>
-          <h3 className="text-lg font-bold text-white">Equal Student Leadership</h3>
+          <h3 className="text-lg font-bold text-white">Student Leadership & Research Wings</h3>
           <p className="text-xs text-slate-400 leading-relaxed">
-            Empowering students with equal leadership roles (President & Vice President) supervised by Faculty Coordinator guidance.
+            Empowering students with dedicated leadership wings (President, Research Head, Coordinators) under Faculty Coordinator supervision.
           </p>
         </div>
       </div>

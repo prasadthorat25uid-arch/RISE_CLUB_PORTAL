@@ -55,28 +55,31 @@ export const AuthProvider = ({ children }) => {
     addToast('Logged out successfully.', 'info');
   };
 
-  const role = currentUser?.role || 'Research Club Member';
+  const role = currentUser?.role || 'RISE Club Member';
 
   const permissions = {
     isFaculty: role === 'Faculty Coordinator',
     isPresident: role === 'President',
-    isVicePresident: role === 'Vice President',
-    isEqualLeadership: role === 'President' || role === 'Vice President',
-    isStudentLead: ['Research Head', 'Secretary + Event Coordinator', 'Social Media & Publicity Head', 'Member Coordinator'].includes(role),
-    isMember: role === 'Research Club Member' || role === 'Club Member',
+    isResearchHead: role === 'Research Head',
+    isEventCoordinator: role === 'Event Coordinator',
+    isSocialHead: role === 'Social Media & Publicity Head',
+    isSecretary: role === 'Secretary',
+    isMemberCoordinator: role === 'Member Coordinator',
+    isStudentLead: ['Research Head', 'Event Coordinator', 'Social Media & Publicity Head', 'Secretary', 'Member Coordinator'].includes(role),
+    isMember: role === 'RISE Club Member' || role === 'Research Club Member' || role === 'Club Member',
 
-    // Role-based functional capabilities (Admins: Faculty Coordinator, President, Vice President)
-    canManageMembers: role === 'Faculty Coordinator' || role === 'President' || role === 'Vice President',
-    canCreateMemberProfile: role === 'Faculty Coordinator' || role === 'President' || role === 'Vice President',
-    canDeleteMemberProfile: role === 'Faculty Coordinator' || role === 'President' || role === 'Vice President',
-    canBulkCreateMembers: role === 'Faculty Coordinator' || role === 'President' || role === 'Vice President',
-    canResetPasswords: role === 'Faculty Coordinator' || role === 'President' || role === 'Vice President',
-    canCreateTeams: role === 'Faculty Coordinator' || role === 'President' || role === 'Vice President',
-    canAssignTasks: role === 'Faculty Coordinator' || role === 'President' || role === 'Vice President' || ['Research Head', 'Secretary + Event Coordinator'].includes(role),
-    canSuspendDeactivate: role === 'Faculty Coordinator' || role === 'President' || role === 'Vice President',
-    canRemoveAccess: role === 'Faculty Coordinator' || role === 'President' || role === 'Vice President',
-    canApproveApplications: role === 'Faculty Coordinator' || role === 'President' || role === 'Vice President',
-    canIssueCertificates: role === 'Faculty Coordinator' || role === 'President' || role === 'Vice President'
+    // Role-based functional capabilities (Admins: Faculty Coordinator, President)
+    canManageMembers: role === 'Faculty Coordinator' || role === 'President' || role === 'Member Coordinator',
+    canCreateMemberProfile: role === 'Faculty Coordinator' || role === 'President' || role === 'Member Coordinator',
+    canDeleteMemberProfile: role === 'Faculty Coordinator' || role === 'President',
+    canBulkCreateMembers: role === 'Faculty Coordinator' || role === 'President',
+    canResetPasswords: role === 'Faculty Coordinator' || role === 'President',
+    canCreateTeams: role === 'Faculty Coordinator' || role === 'President',
+    canAssignTasks: role === 'Faculty Coordinator' || role === 'President' || ['Research Head', 'Event Coordinator', 'Secretary', 'Member Coordinator'].includes(role),
+    canSuspendDeactivate: role === 'Faculty Coordinator' || role === 'President',
+    canRemoveAccess: role === 'Faculty Coordinator' || role === 'President',
+    canApproveApplications: role === 'Faculty Coordinator' || role === 'President' || role === 'Member Coordinator',
+    canIssueCertificates: role === 'Faculty Coordinator' || role === 'President'
   };
 
   const safeUser = currentUser ? {

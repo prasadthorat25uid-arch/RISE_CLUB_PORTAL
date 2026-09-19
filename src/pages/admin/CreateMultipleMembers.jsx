@@ -133,7 +133,7 @@ export const CreateMultipleMembers = () => {
         </div>
         <h2 className="text-2xl font-bold text-white font-outfit">Access Restricted</h2>
         <p className="text-sm text-slate-400 max-w-lg mx-auto">
-          Research Club Member profiles and authentication accounts can only be created by the <strong>Faculty Coordinator (Dr. Abhijit Kshirsagar)</strong>, <strong>President (Ayushi Ahire)</strong>, and <strong>Vice President (Prasad Thorat)</strong>.
+          RISE Club Member profiles and authentication accounts are created by the <strong>Faculty Coordinator (Dr. Abhijit Kshirsagar)</strong> and <strong>President (Ayushi Ahire)</strong>.
         </p>
       </div>
     );
@@ -149,7 +149,7 @@ export const CreateMultipleMembers = () => {
             Create Club Member Accounts
           </h1>
           <p className="text-xs text-slate-400">
-            Authorized for Faculty Coordinator, President, and Vice President
+            Authorized for Faculty Coordinator & President
           </p>
         </div>
 

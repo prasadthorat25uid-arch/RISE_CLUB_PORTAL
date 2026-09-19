@@ -115,7 +115,7 @@ export const MemberManagement = ({ setActiveTab }) => {
       <div className="bg-amber-950/40 border border-amber-500/40 rounded-2xl p-4 flex items-start gap-3">
         <ShieldCheck className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
         <div className="text-xs text-amber-200/90 leading-relaxed">
-          <strong className="text-white font-semibold">Strict Governance & Access Control:</strong> Member profiles, credentials, and private accounts are created and permanently deletable exclusively by the <strong>Faculty Coordinator (Dr. Abhijit Kshirsagar)</strong>, <strong>President (Ayushi Ahire)</strong>, and <strong>Vice President (Prasad Thorat)</strong> following the interview selection process.
+          <strong className="text-white font-semibold">Strict Governance & Access Control:</strong> Member profiles, credentials, and private accounts are created and managed by the <strong>Faculty Coordinator (Dr. Abhijit Kshirsagar)</strong> and <strong>President (Ayushi Ahire)</strong> following the interview selection process.
         </div>
       </div>
 
@@ -154,8 +154,12 @@ export const MemberManagement = ({ setActiveTab }) => {
             <option value="All">All Roles</option>
             <option value="Faculty Coordinator">Faculty Coordinator</option>
             <option value="President">President</option>
-            <option value="Vice President">Vice President</option>
-            <option value="Research Club Member">Research Club Member</option>
+            <option value="Research Head">Research Head</option>
+            <option value="Event Coordinator">Event Coordinator</option>
+            <option value="Social Media & Publicity Head">Social Media & Publicity Head</option>
+            <option value="Secretary">Secretary</option>
+            <option value="Member Coordinator">Member Coordinator</option>
+            <option value="RISE Club Member">RISE Club Member</option>
           </select>
         </div>
 
@@ -197,7 +201,8 @@ export const MemberManagement = ({ setActiveTab }) => {
                   <td className="p-4">
                     <span className={`px-2.5 py-1 rounded text-[11px] font-bold ${
                       mem.role === 'Faculty Coordinator' ? 'bg-purple-950 text-purple-300 border border-purple-800/50' :
-                      (mem.role === 'President' || mem.role === 'Vice President') ? 'bg-amber-950 text-amber-300 border border-amber-800/50' :
+                      mem.role === 'President' ? 'bg-amber-950 text-amber-300 border border-amber-800/50' :
+                      mem.role === 'Research Head' ? 'bg-cyan-950 text-cyan-300 border border-cyan-800/50' :
                       'bg-slate-800 text-slate-300'
                     }`}>
                       {mem.role}
