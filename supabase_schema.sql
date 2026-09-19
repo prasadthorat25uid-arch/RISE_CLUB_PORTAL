@@ -166,6 +166,28 @@ CREATE TABLE IF NOT EXISTS public.certificates (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+-- 10. NOTIFICATIONS TABLE
+CREATE TABLE IF NOT EXISTS public.notifications (
+    id TEXT PRIMARY KEY DEFAULT ('notif-' || gen_random_uuid()::text),
+    user_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    message TEXT NOT NULL,
+    type TEXT DEFAULT 'task',
+    read BOOLEAN DEFAULT false,
+    link TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 11. AUDIT LOGS TABLE
+CREATE TABLE IF NOT EXISTS public.audit_logs (
+    id TEXT PRIMARY KEY DEFAULT ('audit-' || gen_random_uuid()::text),
+    action TEXT NOT NULL,
+    performed_by TEXT NOT NULL,
+    details TEXT,
+    ip_address TEXT DEFAULT '127.0.0.1',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
 -- =========================================================================
 -- ROW LEVEL SECURITY (RLS) POLICIES
 -- =========================================================================
@@ -179,6 +201,8 @@ ALTER TABLE public.events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.announcements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.activity_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.certificates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
 
 -- Profiles table security: Read all public profiles, update only your own
 CREATE POLICY "Public read profiles" ON public.profiles FOR SELECT USING (true);
@@ -209,6 +233,12 @@ CREATE POLICY "Public write access for activity_logs" ON public.activity_logs FO
 
 CREATE POLICY "Public read access for certificates" ON public.certificates FOR SELECT USING (true);
 CREATE POLICY "Public write access for certificates" ON public.certificates FOR ALL USING (true);
+
+CREATE POLICY "Public read access for notifications" ON public.notifications FOR SELECT USING (true);
+CREATE POLICY "Public write access for notifications" ON public.notifications FOR ALL USING (true);
+
+CREATE POLICY "Public read access for audit_logs" ON public.audit_logs FOR SELECT USING (true);
+CREATE POLICY "Public write access for audit_logs" ON public.audit_logs FOR ALL USING (true);
 
 -- =========================================================================
 -- SUPABASE STORAGE CONFIGURATION & POLICIES

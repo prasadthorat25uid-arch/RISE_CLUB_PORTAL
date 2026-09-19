@@ -20,7 +20,13 @@ export const DataProvider = ({ children }) => {
     const local = localStorage.getItem('rise_platform_data');
     if (local) {
       try {
-        return JSON.parse(local);
+        const parsed = JSON.parse(local);
+        return {
+          ...initialSeedData,
+          ...parsed,
+          notifications: parsed.notifications?.length ? parsed.notifications : (initialSeedData.notifications || []),
+          auditLogs: parsed.auditLogs?.length ? parsed.auditLogs : (initialSeedData.auditLogs || [])
+        };
       } catch (e) {
         console.error("Failed to parse local storage data, resetting to seed data", e);
       }
@@ -77,8 +83,76 @@ export const DataProvider = ({ children }) => {
     };
     setData(prev => ({
       ...prev,
-      activityLogs: [newLog, ...prev.activityLogs]
+      activityLogs: [newLog, ...(prev.activityLogs || [])]
     }));
+  };
+
+  const addAuditLog = (userId, userName, action, targetId = '', targetName = '', details = '') => {
+    const now = new Date();
+    const timestamp = now.toISOString().replace('T', ' ').substring(0, 19);
+    const newAudit = {
+      id: `audit-${Date.now()}-${Math.floor(Math.random()*1000)}`,
+      userId,
+      userName,
+      action,
+      targetId: targetId || '',
+      targetName: targetName || '',
+      details: details || '',
+      timestamp
+    };
+    setData(prev => ({
+      ...prev,
+      auditLogs: [newAudit, ...(prev.auditLogs || [])]
+    }));
+    supabase.from('audit_logs').insert([newAudit]).then(() => {}).catch(() => {});
+    return newAudit;
+  };
+
+  const getUserById = (userId) => {
+    if (!userId) return null;
+    return (data.users || []).find(u => u.id === userId || u.prn === userId || u.memberId === userId) || null;
+  };
+
+  const getMemberName = (userId, fallbackName = '') => {
+    if (!userId) return fallbackName || 'Unassigned';
+    const user = getUserById(userId);
+    return user ? user.name : (fallbackName || 'Member');
+  };
+
+  const addNotification = (userId, title, message, type = 'system', link = '') => {
+    const now = new Date();
+    const timeStr = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const newNotif = {
+      id: `notif-${Date.now()}-${Math.floor(Math.random()*1000)}`,
+      userId,
+      title,
+      message,
+      type,
+      read: false,
+      createdAt: timeStr,
+      link
+    };
+    setData(prev => ({
+      ...prev,
+      notifications: [newNotif, ...(prev.notifications || [])]
+    }));
+    supabase.from('notifications').insert([newNotif]).then(() => {}).catch(() => {});
+    return newNotif;
+  };
+
+  const markNotificationAsRead = (notifId) => {
+    setData(prev => ({
+      ...prev,
+      notifications: (prev.notifications || []).map(n => n.id === notifId ? { ...n, read: true } : n)
+    }));
+  };
+
+  const markAllNotificationsAsRead = (userId = null) => {
+    setData(prev => ({
+      ...prev,
+      notifications: (prev.notifications || []).map(n => (!userId || n.userId === userId) ? { ...n, read: true } : n)
+    }));
+    addToast('All notifications marked as read.', 'info');
   };
 
   const generateMemberId = (currentUsers) => {
@@ -581,25 +655,35 @@ export const DataProvider = ({ children }) => {
     addToast(`Team '${newTeam.name}' created!`, 'success');
   };
 
-  const createTask = (taskInput, createdBy = "Admin") => {
+  const createTask = (taskInput, createdBy = "Admin", createdById = "usr-fac-1") => {
+    const memberObj = (data.users || []).find(u => u.id === taskInput.assignedMemberId);
+    const assignedName = memberObj ? memberObj.name : (taskInput.assignedMemberName || 'Unassigned');
+
     const newTask = {
       id: `task-${Date.now()}`,
-      name: taskInput.name,
+      name: taskInput.name || taskInput.title,
+      title: taskInput.name || taskInput.title,
       description: taskInput.description || '',
       assignedMemberId: taskInput.assignedMemberId,
-      assignedMemberName: taskInput.assignedMemberName,
+      assignedMemberName: assignedName,
       assignedTeamId: taskInput.assignedTeamId || '',
       assignedTeamName: taskInput.assignedTeamName || '',
-      assignedById: taskInput.assignedById || 'usr-fac-1',
+      assignedById: createdById || 'usr-fac-1',
       assignedByName: createdBy,
       project: taskInput.project || 'General Research',
       researchActivity: taskInput.researchActivity || 'Task',
       priority: taskInput.priority || 'Medium',
       startDate: taskInput.startDate || new Date().toISOString().split('T')[0],
       deadline: taskInput.deadline,
-      status: 'Assigned',
+      status: taskInput.status || 'Pending',
       progress: 0,
-      notes: taskInput.notes || ''
+      notes: taskInput.notes || '',
+      submissionLink: '',
+      submissionType: '',
+      submissionNotes: '',
+      submittedAt: null,
+      reviewComment: '',
+      completedAt: null
     };
 
     setData(prev => ({
@@ -607,31 +691,53 @@ export const DataProvider = ({ children }) => {
       tasks: [newTask, ...prev.tasks]
     }));
 
-    addActivityLog('Task Assigned', createdBy, newTask.name, `Assigned to ${newTask.assignedMemberName}`);
-    addToast(`Task '${newTask.name}' assigned to ${newTask.assignedMemberName}`, 'success');
+    addActivityLog('Task Assigned', createdBy, newTask.name, `Assigned to ${assignedName}`);
+    addAuditLog(createdById, createdBy, 'TASK_ASSIGNED', newTask.id, newTask.name, `Assigned to ${assignedName} with deadline ${newTask.deadline}`);
+
+    if (newTask.assignedMemberId) {
+      addNotification(
+        newTask.assignedMemberId,
+        'New Task Assigned',
+        `${createdBy} assigned you: '${newTask.name}'. Deadline: ${newTask.deadline}`,
+        'task',
+        'tasks'
+      );
+    }
+
+    addToast(`Task '${newTask.name}' assigned to ${assignedName}`, 'success');
+    supabase.from('tasks').insert([newTask]).then(() => {}).catch(() => {});
+    return newTask;
   };
 
-  const createBulkTasks = (taskInput, selectedMemberIds, createdBy = "Admin") => {
+  const createBulkTasks = (taskInput, selectedMemberIds, createdBy = "Admin", createdById = "usr-fac-1") => {
     const newTasks = selectedMemberIds.map((mId, idx) => {
-      const memberObj = data.users.find(u => u.id === mId);
+      const memberObj = (data.users || []).find(u => u.id === mId);
+      const assignedName = memberObj ? memberObj.name : 'Member';
       return {
         id: `task-${Date.now()}-${idx}`,
-        name: taskInput.name,
+        name: taskInput.name || taskInput.title,
+        title: taskInput.name || taskInput.title,
         description: taskInput.description || '',
         assignedMemberId: mId,
-        assignedMemberName: memberObj ? memberObj.name : 'Member',
+        assignedMemberName: assignedName,
         assignedTeamId: taskInput.assignedTeamId || '',
         assignedTeamName: taskInput.assignedTeamName || '',
-        assignedById: taskInput.assignedById || 'usr-fac-1',
+        assignedById: createdById || 'usr-fac-1',
         assignedByName: createdBy,
         project: taskInput.project || 'General Project',
         researchActivity: taskInput.researchActivity || 'Bulk Task',
         priority: taskInput.priority || 'Medium',
         startDate: taskInput.startDate || new Date().toISOString().split('T')[0],
         deadline: taskInput.deadline,
-        status: 'Assigned',
+        status: 'Pending',
         progress: 0,
-        notes: taskInput.notes || ''
+        notes: taskInput.notes || '',
+        submissionLink: '',
+        submissionType: '',
+        submissionNotes: '',
+        submittedAt: null,
+        reviewComment: '',
+        completedAt: null
       };
     });
 
@@ -640,8 +746,21 @@ export const DataProvider = ({ children }) => {
       tasks: [...newTasks, ...prev.tasks]
     }));
 
-    addActivityLog('Bulk Task Assignment', createdBy, taskInput.name, `Assigned task to ${selectedMemberIds.length} members`);
+    addActivityLog('Bulk Task Assignment', createdBy, taskInput.name || 'Task', `Assigned task to ${selectedMemberIds.length} members`);
+    addAuditLog(createdById, createdBy, 'BULK_TASK_ASSIGNED', 'bulk', taskInput.name || 'Bulk Task', `Assigned to ${selectedMemberIds.length} members`);
+
+    selectedMemberIds.forEach(mId => {
+      addNotification(
+        mId,
+        'New Task Assigned',
+        `${createdBy} assigned you: '${taskInput.name || 'Task'}'. Deadline: ${taskInput.deadline}`,
+        'task',
+        'tasks'
+      );
+    });
+
     addToast(`Assigned task '${taskInput.name}' to ${selectedMemberIds.length} members!`, 'success');
+    supabase.from('tasks').insert(newTasks).then(() => {}).catch(() => {});
   };
 
   const updateTaskStatus = (taskId, newStatus, newProgress) => {
@@ -659,6 +778,183 @@ export const DataProvider = ({ children }) => {
       })
     }));
     addToast(`Task status updated to ${newStatus}`, 'info');
+  };
+
+  const updateTaskProgress = (taskId, progress, status, requestingUserId, userName) => {
+    setData(prev => ({
+      ...prev,
+      tasks: prev.tasks.map(t => {
+        if (t.id === taskId) {
+          return {
+            ...t,
+            progress: progress !== undefined ? progress : t.progress,
+            status: status || (progress === 100 ? 'Completed' : (progress > 0 ? 'In Progress' : t.status))
+          };
+        }
+        return t;
+      })
+    }));
+
+    addActivityLog('Task Progress Updated', userName || 'Member', `Task ID: ${taskId}`, `Progress set to ${progress}%`);
+    addToast(`Progress updated to ${progress}%`, 'info');
+  };
+
+  const submitTaskWork = (taskId, submissionData, memberId, memberName) => {
+    const { linkUrl, linkType, notes } = submissionData;
+    if (!linkUrl) {
+      addToast('Error: Deliverable link URL is required.', 'error');
+      return { success: false, message: 'Link URL is required' };
+    }
+
+    const now = new Date();
+    const timestamp = now.toISOString().split('T')[0] + ' ' + now.toTimeString().split(' ')[0].substring(0, 5);
+
+    const task = (data.tasks || []).find(t => t.id === taskId);
+    const taskName = task ? task.name : 'Task';
+
+    const newSub = {
+      id: `sub-${Date.now()}`,
+      taskId,
+      taskName,
+      memberId,
+      memberName,
+      linkUrl,
+      linkType: linkType || 'GitHub Repository',
+      notes: notes || '',
+      submittedAt: timestamp,
+      status: 'Submitted'
+    };
+
+    setData(prev => ({
+      ...prev,
+      submissions: [newSub, ...(prev.submissions || [])],
+      tasks: prev.tasks.map(t => {
+        if (t.id === taskId) {
+          return {
+            ...t,
+            submissionLink: linkUrl,
+            submissionType: linkType || 'GitHub Repository',
+            submissionNotes: notes || '',
+            submittedAt: timestamp,
+            status: 'Submitted',
+            progress: Math.max(t.progress || 0, 85)
+          };
+        }
+        return t;
+      })
+    }));
+
+    addActivityLog('Work Submitted', memberName, taskName, `Submitted ${linkType}: ${linkUrl}`);
+    
+    if (task?.assignedById) {
+      addNotification(
+        task.assignedById,
+        'Task Deliverable Submitted',
+        `${memberName} submitted work for '${taskName}' ready for evaluation.`,
+        'approval',
+        'manage-tasks'
+      );
+    }
+
+    addToast('Work deliverable submitted successfully! Leadership will evaluate your submission.', 'success');
+    supabase.from('submissions').insert([newSub]).then(() => {}).catch(() => {});
+    return { success: true, submission: newSub };
+  };
+
+  const reviewTaskSubmission = (taskId, reviewData, reviewerId, reviewerName) => {
+    const { decision, reviewComment, score } = reviewData; // decision: 'Approve' | 'Needs Revision'
+    const now = new Date();
+    const timestamp = now.toISOString().split('T')[0] + ' ' + now.toTimeString().split(' ')[0].substring(0, 5);
+
+    const task = (data.tasks || []).find(t => t.id === taskId);
+    if (!task) return { success: false, message: 'Task not found' };
+
+    const isApproved = decision === 'Approve';
+    const newStatus = isApproved ? 'Completed' : 'Needs Revision';
+    const newProgress = isApproved ? 100 : 50;
+
+    setData(prev => ({
+      ...prev,
+      tasks: prev.tasks.map(t => {
+        if (t.id === taskId) {
+          return {
+            ...t,
+            status: newStatus,
+            progress: newProgress,
+            reviewComment: reviewComment || (isApproved ? 'Approved by leadership.' : 'Please revise based on feedback.'),
+            score: score || t.score || 0,
+            completedAt: isApproved ? timestamp : null
+          };
+        }
+        return t;
+      }),
+      submissions: (prev.submissions || []).map(s => {
+        if (s.taskId === taskId) {
+          return {
+            ...s,
+            status: newStatus,
+            feedback: reviewComment,
+            score: score || s.score || 0
+          };
+        }
+        return s;
+      })
+    }));
+
+    addActivityLog(
+      isApproved ? 'Task Approved' : 'Task Revision Requested',
+      reviewerName,
+      task.name,
+      `${decision} by ${reviewerName}. Note: ${reviewComment || 'None'}`
+    );
+
+    addAuditLog(
+      reviewerId,
+      reviewerName,
+      isApproved ? 'TASK_APPROVED' : 'TASK_REVISION_REQUESTED',
+      taskId,
+      task.name,
+      `Decision: ${decision}. Feedback: ${reviewComment || 'N/A'}`
+    );
+
+    if (task.assignedMemberId) {
+      addNotification(
+        task.assignedMemberId,
+        isApproved ? 'Task Submission Approved!' : 'Task Needs Revision',
+        isApproved 
+          ? `Great work! Your submission for '${task.name}' was approved by ${reviewerName}.`
+          : `Feedback from ${reviewerName} on '${task.name}': ${reviewComment || 'Please revise and resubmit.'}`,
+        isApproved ? 'approval' : 'task',
+        'tasks'
+      );
+    }
+
+    addToast(`Task marked as ${newStatus}! Member notified.`, 'success');
+    return { success: true };
+  };
+
+  const editTask = (taskId, taskUpdates, actorId = 'usr-fac-1', actorName = 'Admin') => {
+    setData(prev => ({
+      ...prev,
+      tasks: prev.tasks.map(t => t.id === taskId ? { ...t, ...taskUpdates } : t)
+    }));
+
+    addActivityLog('Task Details Updated', actorName, `Task ID: ${taskId}`, `Updated task parameters`);
+    addAuditLog(actorId, actorName, 'TASK_EDITED', taskId, taskUpdates.name || 'Task', `Updated fields`);
+    addToast('Task updated successfully.', 'success');
+  };
+
+  const deleteTask = (taskId, actorId = 'usr-fac-1', actorName = 'Admin') => {
+    const task = (data.tasks || []).find(t => t.id === taskId);
+    setData(prev => ({
+      ...prev,
+      tasks: prev.tasks.filter(t => t.id !== taskId),
+      submissions: (prev.submissions || []).filter(s => s.taskId !== taskId)
+    }));
+
+    addActivityLog('Task Deleted', actorName, task ? task.name : taskId, 'Task removed by leadership');
+    addAuditLog(actorId, actorName, 'TASK_DELETED', taskId, task ? task.name : 'Task', 'Task deleted');
+    addToast('Task deleted.', 'info');
   };
 
   const submitApplication = (appInput) => {
@@ -976,6 +1272,8 @@ export const DataProvider = ({ children }) => {
       toasts,
       addToast,
       removeToast,
+      getUserById,
+      getMemberName,
       createMember,
       createBulkMembers,
       resetMemberPassword,
@@ -984,10 +1282,18 @@ export const DataProvider = ({ children }) => {
       deleteMemberProfile,
       updateMemberProfile,
       submitWorkLink,
+      submitTaskWork,
+      reviewTaskSubmission,
+      updateTaskProgress,
+      editTask,
+      deleteTask,
       createTeam,
       createTask,
       createBulkTasks,
       updateTaskStatus,
+      addNotification,
+      markNotificationAsRead,
+      markAllNotificationsAsRead,
       createEvent,
       updateEvent,
       deleteEvent,
@@ -1005,7 +1311,8 @@ export const DataProvider = ({ children }) => {
       rejectApplication,
       createAnnouncement,
       resetToSeedData,
-      addActivityLog
+      addActivityLog,
+      addAuditLog
     }}>
       {children}
     </DataContext.Provider>

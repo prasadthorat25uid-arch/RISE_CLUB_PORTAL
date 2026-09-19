@@ -23,21 +23,29 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('rise_is_authenticated', 'true');
   };
 
-  // Login authentication supporting unique PRN OR Email + Password
-  const loginWithPRN = (inputCredential, plainPassword) => {
+  // ERP-style Login supporting PRN, Member ID, or Email + Password
+  const login = (inputCredential, plainPassword) => {
     const cred = inputCredential?.toLowerCase().trim();
+    if (!cred) {
+      addToast('Please enter your PRN, Member ID, or Email.', 'error');
+      return { success: false, message: 'Please enter your PRN, Member ID, or Email.' };
+    }
+
     const foundUser = data.users.find(u => 
-      u.prn?.toLowerCase() === cred || u.email?.toLowerCase() === cred
+      u.prn?.toLowerCase() === cred || 
+      u.email?.toLowerCase() === cred ||
+      u.memberId?.toLowerCase() === cred ||
+      u.id?.toLowerCase() === cred
     );
     
     if (!foundUser) {
-      addToast(`Error: No member account found matching PRN/Email '${inputCredential}'`, 'error');
+      addToast(`Error: No member account found matching '${inputCredential}'`, 'error');
       return { success: false, message: `No account found matching '${inputCredential}'` };
     }
 
     if (foundUser.status === 'Suspended' || foundUser.status === 'Removed') {
       addToast(`Account for ${foundUser.name} is ${foundUser.status}. Access disabled.`, 'error');
-      return { success: false, message: `Account is ${foundUser.status}` };
+      return { success: false, message: `Account is ${foundUser.status}. Please contact the Faculty Coordinator.` };
     }
 
     setCurrentUserId(foundUser.id);
@@ -45,9 +53,11 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('rise_active_user_id', foundUser.id);
     localStorage.setItem('rise_is_authenticated', 'true');
 
-    addToast(`Welcome back, ${foundUser.name}! Logged in to your personal profile.`, 'success');
+    addToast(`Welcome back, ${foundUser.name}! Session verified.`, 'success');
     return { success: true, user: foundUser };
   };
+
+  const loginWithPRN = login;
 
   const logout = () => {
     setIsAuthenticated(false);
@@ -79,11 +89,13 @@ export const AuthProvider = ({ children }) => {
     canSuspendDeactivate: role === 'Faculty Coordinator' || role === 'President',
     canRemoveAccess: role === 'Faculty Coordinator' || role === 'President',
     canApproveApplications: role === 'Faculty Coordinator' || role === 'President' || role === 'Member Coordinator',
-    canIssueCertificates: role === 'Faculty Coordinator' || role === 'President'
+    canIssueCertificates: role === 'Faculty Coordinator' || role === 'President',
+    canViewAuditLogs: role === 'Faculty Coordinator' || role === 'President'
   };
 
   const safeUser = currentUser ? {
     id: currentUser.id,
+    uid: currentUser.id,
     memberId: currentUser.memberId,
     prn: currentUser.prn,
     name: currentUser.name,
@@ -99,15 +111,27 @@ export const AuthProvider = ({ children }) => {
     researchInterests: currentUser.researchInterests,
     technicalSkills: currentUser.technicalSkills,
     bio: currentUser.bio,
-    teams: currentUser.teams
+    teams: currentUser.teams,
+    showResearch: currentUser.showResearch,
+    showProjects: currentUser.showProjects,
+    showPublications: currentUser.showPublications,
+    showEvents: currentUser.showEvents,
+    showAchievements: currentUser.showAchievements,
+    showSkills: currentUser.showSkills,
+    showResearchInterests: currentUser.showResearchInterests,
+    showDepartment: currentUser.showDepartment,
+    showAcademicYear: currentUser.showAcademicYear
   } : null;
 
   return (
     <AuthContext.Provider value={{
       currentUser: safeUser,
       currentUserId,
+      userId: currentUserId,
+      authUid: currentUserId,
       isAuthenticated,
       switchUserRole,
+      login,
       loginWithPRN,
       logout,
       permissions

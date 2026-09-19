@@ -38,6 +38,7 @@ import { AnnouncementsManagement } from './pages/admin/AnnouncementsManagement';
 import { ProfilePage } from './pages/public/ProfilePage';
 import { PublicMemberProfile } from './pages/public/PublicMemberProfile';
 import { NotificationsPage } from './pages/public/NotificationsPage';
+import { TasksPage } from './pages/public/TasksPage';
 import { UnauthorizedPage } from './pages/public/UnauthorizedPage';
 import { DashboardShell } from './components/DashboardShell';
 
@@ -86,7 +87,7 @@ const AppContent = () => {
     'dashboard-faculty', 'dashboard-president', 'dashboard-research',
     'dashboard-events', 'dashboard-social', 'dashboard-secretary',
     'dashboard-members', 'dashboard-member', 'dashboard-pres-vp',
-    'profile', 'notifications',
+    'profile', 'notifications', 'tasks',
     'manage-members', 'create-members', 'manage-teams', 'manage-tasks',
     'manage-applications', 'issue-certificates', 'manage-announcements'
   ].includes(activeTab);
@@ -134,6 +135,8 @@ const AppContent = () => {
         return <ProfilePage setActiveTab={setActiveTab} targetUserId={currentMemberId} />;
       case 'notifications':
         return <NotificationsPage setActiveTab={setActiveTab} />;
+      case 'tasks':
+        return <TasksPage setActiveTab={setActiveTab} />;
 
       // Dedicated Role Portals (Guarded)
       case 'dashboard-faculty':
@@ -202,6 +205,9 @@ const AppContent = () => {
         return <TeamManagement />;
 
       case 'manage-tasks':
+        if (!permissions?.canAssignTasks) {
+          return <UnauthorizedPage setActiveTab={setActiveTab} requestedPath="/manage-tasks" />;
+        }
         return <TaskManagement />;
 
       case 'manage-applications':

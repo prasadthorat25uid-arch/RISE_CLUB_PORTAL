@@ -14,7 +14,10 @@ import {
   LogOut, 
   Sun, 
   ShieldCheck, 
-  ChevronRight 
+  ChevronRight,
+  CheckSquare,
+  ClipboardList,
+  Bell
 } from 'lucide-react';
 
 export const Sidebar = ({ activeTab, setActiveTab, isOpen, onClose }) => {
@@ -47,6 +50,35 @@ export const Sidebar = ({ activeTab, setActiveTab, isOpen, onClose }) => {
       requiresAuth: true
     },
     {
+      key: 'tasks',
+      label: 'My Tasks',
+      icon: CheckSquare,
+      requiresAuth: true
+    },
+    ...(permissions?.canAssignTasks ? [
+      {
+        key: 'manage-tasks',
+        label: 'Task Oversight',
+        icon: ClipboardList,
+        requiresAuth: true
+      }
+    ] : []),
+    ...(permissions?.canManageMembers ? [
+      {
+        key: 'manage-members',
+        label: 'Manage Members',
+        icon: Users,
+        requiresAuth: true
+      }
+    ] : [
+      {
+        key: 'team',
+        label: 'Members',
+        icon: Users,
+        requiresAuth: false
+      }
+    ]),
+    {
       key: permissions?.isResearchHead ? 'dashboard-research' : 'research',
       label: 'Research',
       icon: BookOpen,
@@ -65,20 +97,14 @@ export const Sidebar = ({ activeTab, setActiveTab, isOpen, onClose }) => {
       requiresAuth: false
     },
     {
-      key: permissions?.canManageMembers ? 'manage-members' : 'team',
-      label: 'Members',
-      icon: Users,
-      requiresAuth: false
-    },
-    {
       key: (permissions?.isFaculty || permissions?.isPresident || permissions?.isSecretary || permissions?.isSocialHead) ? 'manage-announcements' : 'notifications',
-      label: 'Announcements',
-      icon: Megaphone,
+      label: (permissions?.isFaculty || permissions?.isPresident || permissions?.isSecretary || permissions?.isSocialHead) ? 'Announcements' : 'Notifications',
+      icon: (permissions?.isFaculty || permissions?.isPresident || permissions?.isSecretary || permissions?.isSocialHead) ? Megaphone : Bell,
       requiresAuth: false
     },
     {
       key: permissions?.canIssueCertificates ? 'issue-certificates' : 'achievements',
-      label: 'Certificates',
+      label: permissions?.canIssueCertificates ? 'Issue Certificates' : 'Certificates',
       icon: Award,
       requiresAuth: false
     },

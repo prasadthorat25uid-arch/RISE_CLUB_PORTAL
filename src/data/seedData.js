@@ -835,5 +835,71 @@ export const initialSeedData = {
       dateTime: "2026-09-19 08:20 PM",
       description: "Official RISE platform initialized for Academic Year 2026–2027."
     }
+  ],
+
+  auditLogs: [
+    {
+      id: "audit-1",
+      userId: "usr-fac-1",
+      userName: "Dr. Abhijit Kshirsagar",
+      action: "MEMBERSHIP_APPROVAL",
+      targetId: "usr-pres-1",
+      targetName: "Ayushi Ahire",
+      details: "Confirmed appointment as President & Student Executive Lead for AY 2026–2027.",
+      timestamp: "2026-07-01 10:00:00"
+    },
+    {
+      id: "audit-2",
+      userId: "usr-pres-1",
+      userName: "Ayushi Ahire",
+      action: "TASK_ASSIGNED",
+      targetId: "usr-mem-2",
+      targetName: "Riya Sen",
+      details: "Assigned Task: Literature Review on Quantized LLMs.",
+      timestamp: "2026-09-01 14:30:00"
+    }
+  ],
+
+  notifications: [
+    {
+      id: "notif-1",
+      userId: "usr-mem-2",
+      title: "New Task Assigned",
+      message: "Research Head assigned you 'Literature Review on Quantized LLMs'. Deadline: Sep 25, 2026.",
+      type: "task",
+      read: false,
+      createdAt: "2026-09-18 10:00 AM",
+      link: "tasks"
+    },
+    {
+      id: "notif-2",
+      userId: "usr-mem-1",
+      title: "Task Submission Under Review",
+      message: "Your submission for 'Dataset Preparation for Crop Disease Classifier' is being evaluated.",
+      type: "approval",
+      read: false,
+      createdAt: "2026-09-19 11:20 AM",
+      link: "tasks"
+    },
+    {
+      id: "notif-3",
+      userId: "usr-vp-1",
+      title: "New Deliverable Submitted",
+      message: "Aarav Mehta submitted a Google Drive dataset deliverable for review.",
+      type: "task",
+      read: false,
+      createdAt: "2026-09-19 11:15 AM",
+      link: "manage-tasks"
+    },
+    {
+      id: "notif-4",
+      userId: "usr-pres-1",
+      title: "New Research Opportunity",
+      message: "Call for Research Papers – RISE Tech Journal Volume IV is now open for manuscript submissions.",
+      type: "system",
+      read: true,
+      createdAt: "2026-09-18 08:00 AM",
+      link: "research"
+    }
   ]
 };

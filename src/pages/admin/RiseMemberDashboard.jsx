@@ -22,7 +22,7 @@ import {
   X
 } from 'lucide-react';
 
-export const RiseMemberDashboard = () => {
+export const RiseMemberDashboard = ({ setActiveTab }) => {
   const { data, updateMemberProfile, submitWorkLink, addToast } = useData();
   const { currentUser } = useAuth();
 
@@ -126,20 +126,27 @@ export const RiseMemberDashboard = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => setActiveTab?.('tasks')}
+              className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold shadow-md transition-all"
+            >
+              <span>My Tasks Workspace</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </button>
             <button
               onClick={() => setIsEditing(true)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 text-xs font-bold shadow-lg shadow-amber-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold border border-slate-700 transition-all"
             >
-              <Edit3 className="w-4 h-4" />
+              <Edit3 className="w-3.5 h-3.5 text-amber-400" />
               <span>Edit Profile</span>
             </button>
             <button
               onClick={() => setPasswordModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-purple-950 hover:bg-purple-900 text-purple-300 text-xs font-bold border border-purple-800/50 transition-all"
+              className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-purple-950 hover:bg-purple-900 text-purple-300 text-xs font-bold border border-purple-800/50 transition-all"
             >
-              <Lock className="w-4 h-4" />
-              <span>Update Password</span>
+              <Lock className="w-3.5 h-3.5" />
+              <span>Password</span>
             </button>
           </div>
         </div>
@@ -147,40 +154,52 @@ export const RiseMemberDashboard = () => {
 
       {/* 4 Member Metric Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="glass-panel p-4 rounded-2xl border border-amber-500/30 space-y-1">
+        <div 
+          onClick={() => setActiveTab?.('tasks')}
+          className="glass-panel p-4 rounded-2xl border border-amber-500/30 space-y-1 cursor-pointer hover:border-amber-400 transition-all group"
+        >
           <div className="flex items-center justify-between text-slate-400">
-            <span className="text-[11px] font-semibold">My Assigned Tasks</span>
-            <Clock className="w-4 h-4 text-amber-400" />
+            <span className="text-[11px] font-semibold group-hover:text-amber-300">My Assigned Tasks</span>
+            <Clock className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
           </div>
           <div className="text-2xl font-black text-white font-outfit">{myTasks.length}</div>
-          <div className="text-[10px] text-amber-300">Deliverables Assigned</div>
+          <div className="text-[10px] text-amber-300">Open Workspace →</div>
         </div>
 
-        <div className="glass-panel p-4 rounded-2xl border border-cyan-500/30 space-y-1">
+        <div 
+          onClick={() => setActiveSubTab('profile')}
+          className="glass-panel p-4 rounded-2xl border border-cyan-500/30 space-y-1 cursor-pointer hover:border-cyan-400 transition-all group"
+        >
           <div className="flex items-center justify-between text-slate-400">
-            <span className="text-[11px] font-semibold">My Research Projects</span>
-            <Layers className="w-4 h-4 text-cyan-400" />
+            <span className="text-[11px] font-semibold group-hover:text-cyan-300">My Research Projects</span>
+            <Layers className="w-4 h-4 text-cyan-400 group-hover:scale-110 transition-transform" />
           </div>
           <div className="text-2xl font-black text-white font-outfit">{myProjects.length || 1}</div>
           <div className="text-[10px] text-cyan-300">Active Lab Groups</div>
         </div>
 
-        <div className="glass-panel p-4 rounded-2xl border border-emerald-500/30 space-y-1">
+        <div 
+          onClick={() => setActiveSubTab('certificates')}
+          className="glass-panel p-4 rounded-2xl border border-emerald-500/30 space-y-1 cursor-pointer hover:border-emerald-400 transition-all group"
+        >
           <div className="flex items-center justify-between text-slate-400">
-            <span className="text-[11px] font-semibold">My Certificates</span>
-            <Award className="w-4 h-4 text-emerald-400" />
+            <span className="text-[11px] font-semibold group-hover:text-emerald-300">My Certificates</span>
+            <Award className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
           </div>
           <div className="text-2xl font-black text-white font-outfit">{myCertificates.length}</div>
           <div className="text-[10px] text-emerald-300">Verified Credentials</div>
         </div>
 
-        <div className="glass-panel p-4 rounded-2xl border border-purple-500/30 space-y-1">
+        <div 
+          onClick={() => setActiveTab?.('notifications')}
+          className="glass-panel p-4 rounded-2xl border border-purple-500/30 space-y-1 cursor-pointer hover:border-purple-400 transition-all group"
+        >
           <div className="flex items-center justify-between text-slate-400">
-            <span className="text-[11px] font-semibold">Announcements</span>
-            <Bell className="w-4 h-4 text-purple-400" />
+            <span className="text-[11px] font-semibold group-hover:text-purple-300">Notifications</span>
+            <Bell className="w-4 h-4 text-purple-400 group-hover:scale-110 transition-transform" />
           </div>
-          <div className="text-2xl font-black text-white font-outfit">{data.announcements?.length || 4}</div>
-          <div className="text-[10px] text-purple-300">Society Notices</div>
+          <div className="text-2xl font-black text-white font-outfit">{data.notifications?.length || data.announcements?.length || 4}</div>
+          <div className="text-[10px] text-purple-300">View Society Alerts →</div>
         </div>
       </div>
 
