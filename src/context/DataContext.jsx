@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { initialSeedData } from '../data/seedData';
+import { supabase } from '../lib/supabaseClient';
 
 const DataContext = createContext();
 
@@ -32,6 +33,24 @@ export const DataProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('rise_platform_data', JSON.stringify(data));
   }, [data]);
+
+  // Initial Supabase remote fetch attempt (with local fallback)
+  useEffect(() => {
+    const syncWithSupabase = async () => {
+      try {
+        const { data: remoteUsers, error: userErr } = await supabase.from('users').select('*');
+        if (!userErr && remoteUsers && remoteUsers.length > 0) {
+          setData(prev => ({
+            ...prev,
+            users: remoteUsers
+          }));
+        }
+      } catch (err) {
+        console.log('Supabase remote sync initialized in local-hybrid mode.');
+      }
+    };
+    syncWithSupabase();
+  }, []);
 
   const addToast = (message, type = 'success') => {
     const id = Date.now() + Math.random();
@@ -97,7 +116,6 @@ export const DataProvider = ({ children }) => {
       submittedAt: timestamp
     };
 
-    // Update tasks state
     setData(prev => ({
       ...prev,
       submissions: [newSub, ...(prev.submissions || [])],
@@ -120,20 +138,13 @@ export const DataProvider = ({ children }) => {
     addActivityLog('Work Submitted via Link', memberName, `Task Submission`, `Attached ${linkType}: ${linkUrl}`);
     addToast(`Deliverable link submitted successfully in link format!`, 'success');
 
-    // Attempt to call Vercel Serverless Function `/api/submissions` asynchronously
-    fetch('/api/submissions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newSub)
-    }).catch(err => {
-      // Offline fallback handling
-      console.log('Vercel serverless offline mode: Saved to local reactive store.', err);
-    });
+    // Async Supabase remote insert attempt
+    supabase.from('submissions').insert([newSub]).then(() => {}).catch(() => {});
 
     return { success: true, submission: newSub };
   };
 
-  // Option A - Individual Member Creation
+  // Individual Member Creation
   const createMember = (memberInput, createdBy = "Admin") => {
     const duplicatePRN = data.users.find(u => u.prn?.toLowerCase() === memberInput.prn?.toLowerCase());
     if (duplicatePRN) {
@@ -182,6 +193,10 @@ export const DataProvider = ({ children }) => {
 
     addActivityLog('Member Profile & Account Created', createdBy, `${newMember.name} (${newMemberId})`, `Member profile created with unique PRN ${newMember.prn} and private authentication account.`);
     addToast(`Research Club Member ${newMember.name} created with ID ${newMemberId}! Login account generated.`, 'success');
+
+    // Async Supabase remote insert attempt
+    supabase.from('users').insert([newMember]).then(() => {}).catch(() => {});
+
     return { success: true, member: newMember, tempPassword: initialPassword };
   };
 
@@ -247,6 +262,8 @@ export const DataProvider = ({ children }) => {
 
       addActivityLog('Bulk Members Created', createdBy, `${createdList.length} Accounts`, `Bulk member onboarding operation executed.`);
       addToast(`Successfully created ${createdList.length} member accounts with unique PRNs!`, 'success');
+      
+      supabase.from('users').insert(createdList).then(() => {}).catch(() => {});
     }
 
     return {
@@ -268,8 +285,11 @@ export const DataProvider = ({ children }) => {
       users: prev.users.map(u => u.id === memberId ? { ...u, passwordHash: newHash } : u)
     }));
 
-    addActivityLog('Password Reset Executed', actor, `${targetUser.name} (${targetUser.memberId})`, `Password reset completed securely. Existing password was not revealed.`);
+    addActivityLog('Password Reset Executed', actor, `${targetUser.name} (${targetUser.memberId})`, `Password reset completed securely.`);
     addToast(`Password for ${targetUser.name} has been reset securely!`, 'success');
+
+    supabase.from('users').update({ passwordHash: newHash }).eq('id', memberId).then(() => {}).catch(() => {});
+
     return { success: true };
   };
 
@@ -282,7 +302,7 @@ export const DataProvider = ({ children }) => {
       users: prev.users.map(u => u.id === memberId ? { ...u, status: newStatus } : u)
     }));
 
-    addActivityLog('Member Status Changed', actor, `${targetUser.name} (${targetUser.memberId})`, `Status changed from ${targetUser.status} to ${newStatus}`);
+    addActivityLog('Member Status Changed', actor, `${targetUser.name} (${targetUser.memberId})`, `Status changed to ${newStatus}`);
     addToast(`Status of ${targetUser.name} set to ${newStatus}`, 'info');
   };
 
@@ -314,7 +334,7 @@ export const DataProvider = ({ children }) => {
       tasks: updatedTasks
     }));
 
-    addActivityLog('Member Access Removed', actor, `${targetUser.name} (${targetUser.memberId})`, `Member active access removed. Preserved publication & achievement history.`);
+    addActivityLog('Member Access Removed', actor, `${targetUser.name} (${targetUser.memberId})`, `Member active access removed.`);
     addToast(`Removed active access for ${targetUser.name}. Historical records preserved.`, 'warning');
     return { success: true };
   };

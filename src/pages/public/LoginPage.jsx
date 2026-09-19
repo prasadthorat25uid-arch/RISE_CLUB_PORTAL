@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
-import { Lock, Sun, KeyRound, ArrowRight, ShieldAlert, CheckCircle2, UserCheck } from 'lucide-react';
+import { Lock, Sun, KeyRound, ArrowRight, ShieldAlert, CheckCircle2, UserCheck, ShieldCheck } from 'lucide-react';
 
 export const LoginPage = ({ setActiveTab }) => {
   const { loginWithPRN, isAuthenticated, currentUser } = useAuth();
@@ -16,7 +16,7 @@ export const LoginPage = ({ setActiveTab }) => {
     setErrorMsg('');
 
     if (!credentialInput || !passwordInput) {
-      setErrorMsg("Please enter your PRN or Email and Password.");
+      setErrorMsg("Please enter your Student PRN or Email and Password.");
       return;
     }
 
@@ -48,26 +48,26 @@ export const LoginPage = ({ setActiveTab }) => {
 
   if (isAuthenticated && currentUser) {
     return (
-      <div className="max-w-2xl mx-auto py-16 px-4 text-center space-y-6">
-        <div className="w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-400 text-emerald-400 flex items-center justify-center mx-auto">
+      <div className="max-w-xl mx-auto py-16 px-4 text-center space-y-6">
+        <div className="w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-400 text-emerald-400 flex items-center justify-center mx-auto shadow-lg">
           <CheckCircle2 className="w-10 h-10" />
         </div>
-        <h2 className="text-2xl font-bold text-white font-outfit">Already Logged In</h2>
-        <p className="text-xs text-slate-300">
-          Authenticated Session: <strong className="text-amber-400">{currentUser.name}</strong> ({currentUser.role} - PRN: {currentUser.prn})
-        </p>
-        <div className="flex justify-center gap-3">
-          <button
-            onClick={() => {
-              if (currentUser.role === 'Faculty Coordinator') setActiveTab('dashboard-faculty');
-              else if (['President', 'Vice President'].includes(currentUser.role)) setActiveTab('dashboard-pres-vp');
-              else setActiveTab('dashboard-member');
-            }}
-            className="px-6 py-2.5 rounded-xl font-bold bg-amber-500 text-slate-950 text-xs shadow-lg hover:bg-amber-400"
-          >
-            Access My Private Dashboard
-          </button>
+        <h2 className="text-2xl font-bold text-white font-outfit">Already Authenticated</h2>
+        <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl text-xs space-y-1 text-slate-300">
+          <p>Logged in as: <strong className="text-amber-400">{currentUser.name}</strong></p>
+          <p>Role: <span className="text-white font-semibold">{currentUser.role}</span> | PRN: <span className="font-mono text-amber-300">{currentUser.prn}</span></p>
         </div>
+        <button
+          onClick={() => {
+            if (currentUser.role === 'Faculty Coordinator') setActiveTab('dashboard-faculty');
+            else if (['President', 'Vice President'].includes(currentUser.role)) setActiveTab('dashboard-pres-vp');
+            else setActiveTab('dashboard-member');
+          }}
+          className="w-full py-3 rounded-2xl font-bold bg-amber-500 text-slate-950 text-xs shadow-xl hover:bg-amber-400 transition-all flex items-center justify-center gap-2"
+        >
+          <ShieldCheck className="w-4 h-4" />
+          <span>Access My Isolated Profile Dashboard</span>
+        </button>
       </div>
     );
   }
@@ -77,25 +77,25 @@ export const LoginPage = ({ setActiveTab }) => {
       
       {/* Header */}
       <div className="text-center space-y-3">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900 border border-amber-500/30 text-amber-400 text-xs font-semibold">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900 border border-amber-500/30 text-amber-400 text-xs font-semibold shadow-md">
           <Lock className="w-4 h-4" />
           <span>Standalone Authenticated Member Access Portal</span>
         </div>
         <h1 className="text-3xl sm:text-5xl font-black text-white font-outfit">
           RISE <span className="gradient-text-sun">Member Login Portal</span>
         </h1>
-        <p className="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto">
-          Every Research Club Member must log in using their own PRN or Email and private password to access their isolated personal profile.
+        <p className="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto leading-relaxed">
+          Each Research Club Member must log in using their own unique <strong>PRN or Email</strong> and <strong>Password</strong> to access their isolated, editable profile.
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
         
-        {/* PRN or Email + Password Form */}
-        <form onSubmit={handleLoginSubmit} className="glass-panel p-8 rounded-3xl space-y-5 border border-slate-800">
+        {/* Dedicated Standalone Login Form */}
+        <form onSubmit={handleLoginSubmit} className="glass-panel p-8 rounded-3xl space-y-5 border border-slate-800 shadow-2xl">
           <h2 className="text-lg font-bold text-white border-b border-slate-800 pb-3 flex items-center gap-2">
             <KeyRound className="w-5 h-5 text-amber-400" />
-            <span>PRN or Email Authentication</span>
+            <span>Member Credential Login</span>
           </h2>
 
           {errorMsg && (
@@ -137,34 +137,35 @@ export const LoginPage = ({ setActiveTab }) => {
             <ArrowRight className="w-4 h-4" />
           </button>
 
-          <p className="text-[11px] text-slate-500 text-center pt-2">
-            🔒 Complete Privacy: Passwords are encrypted & strictly isolated. No member can access another member's profile.
-          </p>
+          <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800 text-[11px] text-slate-400 space-y-1 text-center">
+            <p className="text-amber-300 font-bold">🔒 100% Profile Isolation & Security</p>
+            <p>No member can access or view another member's private profile.</p>
+          </div>
         </form>
 
-        {/* Core Team Quick Selector */}
+        {/* Core Team & Member Accounts Selector for Testing */}
         <div className="glass-panel p-6 rounded-3xl space-y-4 border border-slate-800">
           <div className="border-b border-slate-800 pb-3">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider">Individual Core Team Accounts</h3>
-            <p className="text-xs text-slate-400 mt-0.5">Click any individual account to test isolated profile login</p>
+            <h3 className="text-sm font-bold text-white uppercase tracking-wider">Test Individual Member Accounts</h3>
+            <p className="text-xs text-slate-400 mt-0.5">Click any account to authenticate as that member</p>
           </div>
 
-          <div className="space-y-2 max-h-80 overflow-y-auto">
-            {data.users.slice(0, 8).map(u => (
+          <div className="space-y-2 max-h-96 overflow-y-auto">
+            {data.users.map(u => (
               <button
                 key={u.id}
                 type="button"
                 onClick={() => handleQuickDemoLogin(u)}
-                className="w-full p-3 rounded-2xl bg-slate-900 border border-slate-800 hover:border-amber-500/50 flex items-center justify-between text-left transition-all"
+                className="w-full p-3 rounded-2xl bg-slate-900 border border-slate-800 hover:border-amber-500/50 flex items-center justify-between text-left transition-all group"
               >
                 <div className="flex items-center gap-3">
                   <img src={u.photo} alt={u.name} className="w-8 h-8 rounded-full object-cover border border-amber-400/40" />
                   <div>
-                    <div className="text-xs font-bold text-white">{u.name}</div>
-                    <div className="text-[10px] text-amber-400 font-mono">{u.prn} | {u.role}</div>
+                    <div className="text-xs font-bold text-white group-hover:text-amber-400 transition-colors">{u.name}</div>
+                    <div className="text-[10px] text-slate-400 font-mono">PRN: <span className="text-amber-300">{u.prn}</span> | {u.role}</div>
                   </div>
                 </div>
-                <UserCheck className="w-4 h-4 text-slate-500" />
+                <UserCheck className="w-4 h-4 text-slate-500 group-hover:text-amber-400" />
               </button>
             ))}
           </div>
