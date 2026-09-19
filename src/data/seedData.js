@@ -39,7 +39,7 @@ export const initialSeedData = {
       memberId: "RISE-2026-001",
       prn: "PRN2026001",
       passwordHash: "$2a$10$x7Y8Z9A0B1C2D3E4F5G6H7I8J9K0L1M2N3O4P5Q6R7S8T9U0V1W",
-      name: "Ayushi Ahire",
+      name: "Ayushi Didi (Ayushi Ahire)",
       email: "ayushi.ahire@sanjivani.edu.in",
       phone: "+91 98765 43210",
       role: "President",
@@ -62,7 +62,7 @@ export const initialSeedData = {
       memberId: "RISE-2026-002",
       prn: "PRN2026002",
       passwordHash: "$2a$10$u0V1W2X3Y4Z5A6B7C8D9E0F1G2H3I4J5K6L7M8N9O0P1Q2R3S4T",
-      name: "Prasad Thorat",
+      name: "Prasad (Prasad Thorat)",
       email: "prasad.thorat@sanjivani.edu.in",
       phone: "+91 98765 43211",
       role: "Vice President",
@@ -85,7 +85,7 @@ export const initialSeedData = {
       memberId: "RISE-2026-003",
       prn: "PRN2026003",
       passwordHash: "$2a$10$p0Q1R2S3T4U5V6W7X8Y9Z0A1B2C3D4E5F6G7H8I9J0K1L2M3N4O",
-      name: "Shweta Pawar",
+      name: "Shweta Didi (Shweta Pawar)",
       email: "shweta.pawar@sanjivani.edu.in",
       phone: "+91 98765 43212",
       role: "Research Head",
@@ -303,48 +303,6 @@ export const initialSeedData = {
       startDate: "2026-07-10",
       status: "Active",
       objective: "Publish 2 Scopus-indexed IEEE papers on low-resource LLM compression."
-    },
-    {
-      id: "team-2",
-      name: "Autonomous Systems & Robotics Team",
-      type: "Project Team",
-      domain: "Robotics & Edge AI",
-      description: "Developing autonomous UAV flight controllers and SLAM navigation algorithms for indoor inspection.",
-      leaderId: "usr-sec-1",
-      leaderName: "Sairaj Tambe, Sanskar Kulkarni & Sairaj Neware",
-      facultyMentor: "Dr. Abhijit Kshirsagar",
-      memberIds: ["usr-sec-1", "usr-sec-2", "usr-sec-3"],
-      startDate: "2026-07-15",
-      status: "Active",
-      objective: "Build functional drone prototype for Sanjivani Smart Campus navigation."
-    },
-    {
-      id: "team-3",
-      name: "Smart Agriculture & Healthcare Innovation Team",
-      type: "Innovation Team",
-      domain: "Healthcare & Precision Ag",
-      description: "Applying computer vision and sensor fusion to diagnose crop diseases and early retinal abnormalities.",
-      leaderId: "usr-vp-1",
-      leaderName: "Prasad (VP)",
-      facultyMentor: "Dr. Abhijit Kshirsagar",
-      memberIds: ["usr-vp-1", "usr-mem-1"],
-      startDate: "2026-07-20",
-      status: "Active",
-      objective: "File 1 Indian Patent for handheld soil spectroscopy device."
-    },
-    {
-      id: "team-4",
-      name: "Technical Documentation & Media Team",
-      type: "Documentation Team",
-      domain: "Scientific Communication & Publicity",
-      description: "Managing LaTeX formatting, peer review preparations, and RISE media spotlights.",
-      leaderId: "usr-pub-1",
-      leaderName: "Ashutosh Hadave & Vedant Dathe",
-      facultyMentor: "Dr. Abhijit Kshirsagar",
-      memberIds: ["usr-pub-1", "usr-pub-2", "usr-mem-coord-1"],
-      startDate: "2026-07-25",
-      status: "Active",
-      objective: "Maintain 100% compliance with IEEE conference formatting standards."
     }
   ],
 
@@ -366,6 +324,10 @@ export const initialSeedData = {
       deadline: "2026-09-25",
       status: "In Progress",
       progress: 65,
+      submissionLink: "https://github.com/rise-sanjivani/marathi-llm-lit-review",
+      submissionType: "GitHub Repository",
+      submissionNotes: "Initial LaTeX draft and benchmark paper comparison table completed.",
+      submittedAt: "2026-09-18 04:30 PM",
       notes: "Drafting introduction chapter in LaTeX."
     },
     {
@@ -385,7 +347,36 @@ export const initialSeedData = {
       deadline: "2026-09-28",
       status: "Under Review",
       progress: 90,
+      submissionLink: "https://drive.google.com/drive/folders/1A2B3C4D5E6F_CropDataset2026",
+      submissionType: "Google Drive Document",
+      submissionNotes: "Roboflow annotations exported in YOLOv8 PyTorch format.",
+      submittedAt: "2026-09-19 11:15 AM",
       notes: "Annotations completed using Roboflow."
+    }
+  ],
+
+  submissions: [
+    {
+      id: "sub-1",
+      taskId: "task-101",
+      taskName: "Literature Review on Quantized LLMs",
+      memberId: "usr-mem-2",
+      memberName: "Riya Sen",
+      linkUrl: "https://github.com/rise-sanjivani/marathi-llm-lit-review",
+      linkType: "GitHub Repository",
+      notes: "Initial LaTeX draft and benchmark paper comparison table completed.",
+      submittedAt: "2026-09-18 04:30 PM"
+    },
+    {
+      id: "sub-2",
+      taskId: "task-102",
+      taskName: "Dataset Preparation for Crop Disease Classifier",
+      memberId: "usr-mem-1",
+      memberName: "Aarav Mehta",
+      linkUrl: "https://drive.google.com/drive/folders/1A2B3C4D5E6F_CropDataset2026",
+      linkType: "Google Drive Document",
+      notes: "Roboflow annotations exported in YOLOv8 PyTorch format.",
+      submittedAt: "2026-09-19 11:15 AM"
     }
   ],
 
@@ -404,6 +395,7 @@ export const initialSeedData = {
       expectedCompletion: "2026-12-30",
       status: "In Progress",
       progress: 60,
+      submissionLink: "https://github.com/rise-sanjivani/indic-agri-llm",
       researchProblem: "Existing LLMs lack accuracy in local Marathi dialects for complex pest control instructions.",
       researchGap: "Absence of domain-specific agricultural speech-to-text datasets in rural Maharashtra.",
       methodology: "LoRA fine-tuning of Llama-3-8B with Whisper ASR integration.",
@@ -455,6 +447,7 @@ export const initialSeedData = {
       year: "2026",
       publicationDate: "2026-05-18",
       doi: "10.1109/JSYST.2026.3398112",
+      linkUrl: "https://doi.org/10.1109/JSYST.2026.3398112",
       type: "Journal Paper",
       status: "Published",
       associatedProject: "Edge AI Vision Pipeline"
@@ -509,19 +502,11 @@ export const initialSeedData = {
   activityLogs: [
     {
       id: "log-1",
-      action: "System Initialized",
+      action: "Vercel Backend Configured",
       user: "Dr. Abhijit Kshirsagar (Faculty Coordinator)",
-      target: "RISE Official Platform",
-      dateTime: "2026-09-19 10:00 AM",
-      description: "Official Academic Year 2026-2027 workspace configuration set up."
-    },
-    {
-      id: "log-2",
-      action: "Core Team Personnel Updated",
-      user: "Dr. Abhijit Kshirsagar (Faculty Coordinator)",
-      target: "Ayushi Didi (President) & Prasad (VP)",
-      dateTime: "2026-09-19 10:05 AM",
-      description: "Updated Core Team roster: Ayushi Didi (Pres), Prasad (VP), Shweta Didi & Ayushi Didi (Research Head), Sairaj Tambe, Sanskar Kulkarni & Sairaj Neware (Secretary + Event Coord), Ashutosh Hadave & Vedant Dathe (Publicity), Vaishnavi, Ayushi Didi & Prasad (Member Coord), Sanskar Kulkarni (Discipline)."
+      target: "Vercel Serverless Functions",
+      dateTime: "2026-09-19 08:20 PM",
+      description: "Vercel configuration vercel.json and api serverless endpoints deployed."
     }
   ]
 };

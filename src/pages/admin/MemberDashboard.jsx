@@ -12,15 +12,28 @@ import {
   Calendar, 
   Layers, 
   Sparkles,
-  ShieldCheck
+  ShieldCheck,
+  Link,
+  ExternalLink,
+  UploadCloud,
+  X
 } from 'lucide-react';
 
 export const MemberDashboard = () => {
-  const { data, updateMemberProfile, updateTaskStatus } = useData();
+  const { data, updateMemberProfile, updateTaskStatus, submitWorkLink } = useData();
   const { currentUser } = useAuth();
 
   const [activeTab, setActiveTab] = useState('overview');
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+
+  // Link Submission Modal state
+  const [linkModalOpen, setLinkModalOpen] = useState(false);
+  const [selectedTaskForSubmission, setSelectedTaskForSubmission] = useState(null);
+  const [submissionForm, setSubmissionForm] = useState({
+    linkUrl: '',
+    linkType: 'GitHub Repository',
+    notes: ''
+  });
 
   // Profile Form state
   const [profileForm, setProfileForm] = useState({
@@ -35,9 +48,37 @@ export const MemberDashboard = () => {
   const myPendingTasks = myTasks.filter(t => t.status !== 'Completed' && t.status !== 'Cancelled');
   const myCompletedTasks = myTasks.filter(t => t.status === 'Completed');
 
-  const myTeams = data.teams.filter(team => team.memberIds?.includes(currentUser?.id) || team.leaderId === currentUser?.id);
   const myProjects = data.projects.filter(p => p.memberIds?.includes(currentUser?.id) || p.studentLeader?.includes(currentUser?.name));
   const myAchievements = data.achievements.filter(a => a.recipientName === currentUser?.name);
+
+  const handleOpenLinkModal = (task) => {
+    setSelectedTaskForSubmission(task);
+    setSubmissionForm({
+      linkUrl: task.submissionLink || '',
+      linkType: task.submissionType || 'GitHub Repository',
+      notes: task.submissionNotes || ''
+    });
+    setLinkModalOpen(true);
+  };
+
+  const handleExecuteLinkSubmission = (e) => {
+    e.preventDefault();
+    if (!submissionForm.linkUrl) {
+      alert("Please enter a valid Submission Link URL.");
+      return;
+    }
+
+    submitWorkLink({
+      taskId: selectedTaskForSubmission.id,
+      memberId: currentUser.id,
+      memberName: currentUser.name,
+      linkUrl: submissionForm.linkUrl,
+      linkType: submissionForm.linkType,
+      notes: submissionForm.notes
+    });
+
+    setLinkModalOpen(false);
+  };
 
   const handleSaveProfile = (e) => {
     e.preventDefault();
@@ -85,13 +126,13 @@ export const MemberDashboard = () => {
         <div className="glass-panel p-4 rounded-2xl space-y-1">
           <div className="text-xs font-semibold text-slate-400">My Pending Tasks</div>
           <div className="text-2xl font-black text-amber-400 font-outfit">{myPendingTasks.length}</div>
-          <div className="text-[10px] text-slate-500">Requires Attention</div>
+          <div className="text-[10px] text-slate-500">Requires Link Deliverable</div>
         </div>
 
         <div className="glass-panel p-4 rounded-2xl space-y-1">
           <div className="text-xs font-semibold text-slate-400">Completed Tasks</div>
           <div className="text-2xl font-black text-emerald-400 font-outfit">{myCompletedTasks.length}</div>
-          <div className="text-[10px] text-slate-500">Factual History</div>
+          <div className="text-[10px] text-slate-500">Verified Submissions</div>
         </div>
 
         <div className="glass-panel p-4 rounded-2xl space-y-1">
@@ -110,9 +151,8 @@ export const MemberDashboard = () => {
       {/* Section Tabs */}
       <div className="flex flex-wrap gap-2 border-b border-slate-800 pb-3">
         {[
-          { id: 'overview', label: 'My Tasks' },
+          { id: 'overview', label: 'My Work & Link Submissions' },
           { id: 'projects', label: 'My Projects' },
-          { id: 'teams', label: 'My Teams' },
           { id: 'certificates', label: 'My Certificates' },
           { id: 'profile', label: 'My Profile Settings' }
         ].map(tb => (
@@ -130,11 +170,14 @@ export const MemberDashboard = () => {
         ))}
       </div>
 
-      {/* Tab 1: My Tasks */}
+      {/* Tab 1: My Tasks & Mandatory Link Submissions */}
       {activeTab === 'overview' && (
         <div className="space-y-4">
-          <h3 className="text-base font-bold text-white font-outfit">Assigned Work & Action Items</h3>
-          
+          <div className="flex items-center justify-between">
+            <h3 className="text-base font-bold text-white font-outfit">Assigned Work & Link Submissions</h3>
+            <span className="text-xs text-amber-400 font-semibold">🔗 All member deliverables must be submitted in Link format</span>
+          </div>
+
           <div className="space-y-3">
             {myTasks.length === 0 ? (
               <div className="p-8 text-center bg-slate-900/60 rounded-2xl border border-slate-800 text-xs text-slate-400">
@@ -161,18 +204,53 @@ export const MemberDashboard = () => {
 
                   <p className="text-xs text-slate-400 leading-relaxed">{task.description}</p>
 
+                  {/* Submitted Link Badge */}
+                  {task.submissionLink ? (
+                    <div className="bg-slate-950/80 p-3 rounded-xl border border-cyan-500/30 flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2">
+                        <Link className="w-4 h-4 text-cyan-400" />
+                        <div>
+                          <span className="text-slate-300 font-bold block">{task.submissionType} Submitted</span>
+                          <a
+                            href={task.submissionLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-cyan-400 hover:underline font-mono text-[11px] flex items-center gap-1"
+                          >
+                            <span>{task.submissionLink}</span>
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        </div>
+                      </div>
+                      <span className="text-[10px] text-slate-500 font-mono">{task.submittedAt}</span>
+                    </div>
+                  ) : (
+                    <div className="bg-amber-950/30 border border-amber-500/30 p-2.5 rounded-xl text-[11px] text-amber-200">
+                      ⚠ No link deliverable attached yet. Click below to submit work URL.
+                    </div>
+                  )}
+
                   <div className="flex flex-wrap items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-800/80 gap-2">
                     <span>Deadline: <strong className="text-amber-400">{task.deadline}</strong></span>
-                    <span>Assigned By: {task.assignedByName}</span>
                     
-                    {task.status !== 'Completed' && (
+                    <div className="flex items-center gap-2">
                       <button
-                        onClick={() => updateTaskStatus(task.id, 'Completed', 100)}
-                        className="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs"
+                        onClick={() => handleOpenLinkModal(task)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs shadow-md"
                       >
-                        Mark Completed
+                        <UploadCloud className="w-3.5 h-3.5" />
+                        <span>{task.submissionLink ? 'Update Submission Link' : 'Submit Work via Link'}</span>
                       </button>
-                    )}
+
+                      {task.status !== 'Completed' && (
+                        <button
+                          onClick={() => updateTaskStatus(task.id, 'Completed', 100)}
+                          className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs"
+                        >
+                          Mark Completed
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))
@@ -181,7 +259,84 @@ export const MemberDashboard = () => {
         </div>
       )}
 
-      {/* Tab: My Profile Settings (Permitted Field Editing Only!) */}
+      {/* LINK SUBMISSION MODAL */}
+      {linkModalOpen && selectedTaskForSubmission && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+          <form onSubmit={handleExecuteLinkSubmission} className="bg-slate-900 border border-cyan-500/40 rounded-3xl p-6 max-w-md w-full space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2 text-cyan-400">
+                <Link className="w-5 h-5" />
+                <h3 className="text-base font-bold text-white font-outfit">Submit Work in Link Format</h3>
+              </div>
+              <button type="button" onClick={() => setLinkModalOpen(false)} className="text-slate-400 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800 text-xs space-y-1">
+              <p><strong>Task:</strong> {selectedTaskForSubmission.name}</p>
+              <p className="text-slate-400 text-[11px]">All member deliverables are stored in link format for Faculty & Leadership evaluation.</p>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-slate-300 mb-1">Link Type</label>
+              <select
+                value={submissionForm.linkType}
+                onChange={e => setSubmissionForm({ ...submissionForm, linkType: e.target.value })}
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white"
+              >
+                <option value="GitHub Repository">GitHub Repository</option>
+                <option value="Google Drive Document">Google Drive Document / Dataset</option>
+                <option value="Research Paper Link">Research Paper Link / Manuscript</option>
+                <option value="Figma Prototype">Figma Prototype</option>
+                <option value="Video Demo Link">Video Demo Link</option>
+                <option value="Other URL">Other External Link</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-slate-300 mb-1">Submission Link URL *</label>
+              <input
+                type="url"
+                required
+                placeholder="https://github.com/your-username/project-repo"
+                value={submissionForm.linkUrl}
+                onChange={e => setSubmissionForm({ ...submissionForm, linkUrl: e.target.value })}
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white font-mono focus:border-cyan-500 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-slate-300 mb-1">Deliverable Notes & Summary</label>
+              <textarea
+                rows={3}
+                placeholder="Brief summary of work completed in this link..."
+                value={submissionForm.notes}
+                onChange={e => setSubmissionForm({ ...submissionForm, notes: e.target.value })}
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:border-cyan-500 focus:outline-none"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setLinkModalOpen(false)}
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold text-xs shadow-md"
+              >
+                Confirm Link Submission
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Tab: My Profile Settings */}
       {activeTab === 'profile' && (
         <div className="glass-panel p-6 sm:p-8 rounded-3xl space-y-6 border border-slate-800">
           <div className="flex items-center justify-between border-b border-slate-800 pb-4">
@@ -209,21 +364,17 @@ export const MemberDashboard = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
-            {/* Non-editable Official Information */}
             <div className="space-y-3 bg-slate-950/60 p-5 rounded-2xl border border-slate-800">
-              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Official System Metadata (Non-Editable)</h4>
+              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Official System Metadata</h4>
               <div className="space-y-2 text-xs">
                 <p><strong className="text-slate-300">Official Role:</strong> <span className="text-amber-400 font-bold">{currentUser?.role}</span></p>
                 <p><strong className="text-slate-300">Member ID:</strong> <span className="text-white font-mono">{currentUser?.memberId}</span></p>
                 <p><strong className="text-slate-300">Student ID / PRN:</strong> <span className="text-white font-mono">{currentUser?.prn}</span></p>
                 <p><strong className="text-slate-300">Membership Status:</strong> <span className="text-emerald-400 font-bold">{currentUser?.status}</span></p>
                 <p><strong className="text-slate-300">Department:</strong> <span className="text-slate-200">{currentUser?.department}</span></p>
-                <p><strong className="text-slate-300">Joining Date:</strong> <span className="text-slate-200">{currentUser?.joiningDate}</span></p>
               </div>
             </div>
 
-            {/* Editable Fields */}
             <div className="space-y-4">
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1">Phone Number</label>
@@ -237,18 +388,7 @@ export const MemberDashboard = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Profile Photo URL</label>
-                <input
-                  type="text"
-                  disabled={!isEditingProfile}
-                  value={profileForm.photo}
-                  onChange={e => setProfileForm({ ...profileForm, photo: e.target.value })}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white disabled:opacity-60 focus:border-amber-500 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Research Interests (Comma separated)</label>
+                <label className="block text-xs font-medium text-slate-300 mb-1">Research Interests</label>
                 <input
                   type="text"
                   disabled={!isEditingProfile}
@@ -257,30 +397,7 @@ export const MemberDashboard = () => {
                   className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white disabled:opacity-60 focus:border-amber-500 focus:outline-none"
                 />
               </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Technical & AI Skills</label>
-                <input
-                  type="text"
-                  disabled={!isEditingProfile}
-                  value={profileForm.technicalSkills}
-                  onChange={e => setProfileForm({ ...profileForm, technicalSkills: e.target.value })}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white disabled:opacity-60 focus:border-amber-500 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Bio & Portfolio Summary</label>
-                <textarea
-                  rows={3}
-                  disabled={!isEditingProfile}
-                  value={profileForm.bio}
-                  onChange={e => setProfileForm({ ...profileForm, bio: e.target.value })}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white disabled:opacity-60 focus:border-amber-500 focus:outline-none"
-                />
-              </div>
             </div>
-
           </div>
         </div>
       )}

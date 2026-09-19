@@ -3,7 +3,6 @@ import { initialSeedData } from '../data/seedData';
 
 const DataContext = createContext();
 
-// Simple secure hash helper (simulates SHA-256 / bcrypt storage)
 const hashPassword = (plainPassword) => {
   if (!plainPassword) return '$2a$10$defaultHashValueForEmptyPassword';
   let hash = 0;
@@ -76,9 +75,66 @@ export const DataProvider = ({ children }) => {
     return `RISE-2026-${nextNum}`;
   };
 
-  // Option A - Individual Member Creation (With Unique PRN & Private Password Hashing)
+  // LINK-BASED WORK SUBMISSION FOR MEMBERS
+  const submitWorkLink = (input) => {
+    const { taskId, memberId, memberName, linkUrl, linkType, notes } = input;
+    if (!linkUrl) {
+      addToast('Error: Submission Link URL is required!', 'error');
+      return { success: false, message: 'Link URL is required' };
+    }
+
+    const now = new Date();
+    const timestamp = now.toISOString().split('T')[0] + ' ' + now.toTimeString().split(' ')[0].substring(0, 5);
+
+    const newSub = {
+      id: `sub-${Date.now()}`,
+      taskId,
+      memberId,
+      memberName,
+      linkUrl,
+      linkType: linkType || 'GitHub Repository',
+      notes: notes || '',
+      submittedAt: timestamp
+    };
+
+    // Update tasks state
+    setData(prev => ({
+      ...prev,
+      submissions: [newSub, ...(prev.submissions || [])],
+      tasks: prev.tasks.map(t => {
+        if (t.id === taskId) {
+          return {
+            ...t,
+            submissionLink: linkUrl,
+            submissionType: linkType || 'GitHub Repository',
+            submissionNotes: notes || '',
+            submittedAt: timestamp,
+            status: 'Under Review',
+            progress: 90
+          };
+        }
+        return t;
+      })
+    }));
+
+    addActivityLog('Work Submitted via Link', memberName, `Task Submission`, `Attached ${linkType}: ${linkUrl}`);
+    addToast(`Deliverable link submitted successfully in link format!`, 'success');
+
+    // Attempt to call Vercel Serverless Function `/api/submissions` asynchronously
+    fetch('/api/submissions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newSub)
+    }).catch(err => {
+      // Offline fallback handling
+      console.log('Vercel serverless offline mode: Saved to local reactive store.', err);
+    });
+
+    return { success: true, submission: newSub };
+  };
+
+  // Option A - Individual Member Creation
   const createMember = (memberInput, createdBy = "Admin") => {
-    // Unique PRN enforcement
     const duplicatePRN = data.users.find(u => u.prn?.toLowerCase() === memberInput.prn?.toLowerCase());
     if (duplicatePRN) {
       addToast(`Error: PRN ${memberInput.prn} already exists! PRN must be unique.`, 'error');
@@ -99,7 +155,7 @@ export const DataProvider = ({ children }) => {
       id: `usr-${Date.now()}-${Math.floor(Math.random()*1000)}`,
       memberId: newMemberId,
       prn: memberInput.prn,
-      passwordHash: passwordHash, // 100% Hashed & Private
+      passwordHash: passwordHash,
       name: memberInput.fullName || memberInput.name,
       email: memberInput.email,
       phone: memberInput.phone || '',
@@ -129,7 +185,6 @@ export const DataProvider = ({ children }) => {
     return { success: true, member: newMember, tempPassword: initialPassword };
   };
 
-  // Option B - Bulk Member Creation
   const createBulkMembers = (membersArray, createdBy = "Admin") => {
     let currentUsers = [...data.users];
     const createdList = [];
@@ -202,8 +257,6 @@ export const DataProvider = ({ children }) => {
     };
   };
 
-  // SECURE PASSWORD RESET WORKFLOW
-  // Note: Old password is NEVER revealed or viewed. Generates a new password hash directly.
   const resetMemberPassword = (memberId, newPassword, actor = "Admin") => {
     const targetUser = data.users.find(u => u.id === memberId);
     if (!targetUser) return { success: false, message: "User not found" };
@@ -220,7 +273,6 @@ export const DataProvider = ({ children }) => {
     return { success: true };
   };
 
-  // Member Status Update
   const updateMemberStatus = (memberId, newStatus, actor = "Admin") => {
     const targetUser = data.users.find(u => u.id === memberId);
     if (!targetUser) return;
@@ -234,7 +286,6 @@ export const DataProvider = ({ children }) => {
     addToast(`Status of ${targetUser.name} set to ${newStatus}`, 'info');
   };
 
-  // Safe Removal / Deactivation with Task Reassignment Safeguard
   const removeMemberSafely = (memberId, reassignToMemberId = null, actor = "Admin") => {
     const targetUser = data.users.find(u => u.id === memberId);
     if (!targetUser) return { success: false, message: "User not found" };
@@ -268,7 +319,6 @@ export const DataProvider = ({ children }) => {
     return { success: true };
   };
 
-  // Update Member Profile
   const updateMemberProfile = (memberId, updatedFields, actor = "User") => {
     setData(prev => ({
       ...prev,
@@ -277,7 +327,6 @@ export const DataProvider = ({ children }) => {
     addToast('Profile updated successfully!', 'success');
   };
 
-  // Teams CRUD
   const createTeam = (teamInput, createdBy = "Admin") => {
     const newTeam = {
       id: `team-${Date.now()}`,
@@ -303,7 +352,6 @@ export const DataProvider = ({ children }) => {
     addToast(`Team '${newTeam.name}' created!`, 'success');
   };
 
-  // Tasks Assignment
   const createTask = (taskInput, createdBy = "Admin") => {
     const newTask = {
       id: `task-${Date.now()}`,
@@ -384,7 +432,6 @@ export const DataProvider = ({ children }) => {
     addToast(`Task status updated to ${newStatus}`, 'info');
   };
 
-  // Public Join Applications & Interview Pipeline
   const submitApplication = (appInput) => {
     const newApp = {
       id: `app-${Date.now()}`,
@@ -406,7 +453,6 @@ export const DataProvider = ({ children }) => {
     const appObj = data.applications.find(a => a.id === appId);
     if (!appObj) return;
 
-    // Create member account post-interview selection
     const result = createMember({
       fullName: appObj.fullName,
       prn: appObj.prn,
@@ -501,6 +547,7 @@ export const DataProvider = ({ children }) => {
       updateMemberStatus,
       removeMemberSafely,
       updateMemberProfile,
+      submitWorkLink,
       createTeam,
       createTask,
       createBulkTasks,

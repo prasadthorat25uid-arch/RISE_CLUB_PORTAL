@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
-import { CheckCircle2, Plus, Users, Clock, AlertTriangle, Layers, Filter } from 'lucide-react';
+import { CheckCircle2, Plus, Users, Clock, AlertTriangle, Layers, Filter, Link, ExternalLink } from 'lucide-react';
 
 export const TaskManagement = () => {
   const { data, createTask, createBulkTasks, updateTaskStatus } = useData();
   const { currentUser } = useAuth();
 
-  const [assignmentMode, setAssignmentMode] = useState('single'); // 'single' or 'bulk'
+  const [assignmentMode, setAssignmentMode] = useState('single');
   const [modalOpen, setModalOpen] = useState(false);
 
-  // Single Task Form
   const [taskForm, setTaskForm] = useState({
     name: '',
     description: '',
@@ -22,7 +21,6 @@ export const TaskManagement = () => {
     notes: ''
   });
 
-  // Bulk Task State
   const [bulkMemberIds, setBulkMemberIds] = useState([]);
 
   const handleSingleSubmit = (e) => {
@@ -63,8 +61,8 @@ export const TaskManagement = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-8">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white font-outfit">Work & Task Assignment System</h1>
-          <p className="text-xs text-slate-400">Assign individual tasks or bulk assign tasks to entire teams</p>
+          <h1 className="text-2xl sm:text-3xl font-black text-white font-outfit">Work & Link Submission Oversight</h1>
+          <p className="text-xs text-slate-400">Assign tasks and evaluate link deliverables submitted by members</p>
         </div>
 
         <button
@@ -84,7 +82,7 @@ export const TaskManagement = () => {
               <tr>
                 <th className="p-4">Task Name</th>
                 <th className="p-4">Assigned Member</th>
-                <th className="p-4">Project / Domain</th>
+                <th className="p-4">Submitted Work Link</th>
                 <th className="p-4">Priority</th>
                 <th className="p-4">Deadline</th>
                 <th className="p-4">Status & Progress</th>
@@ -101,7 +99,27 @@ export const TaskManagement = () => {
                   <td className="p-4 font-semibold text-amber-300">
                     {task.assignedMemberName}
                   </td>
-                  <td className="p-4 text-slate-300">{task.project}</td>
+                  
+                  {/* Link Format Deliverable */}
+                  <td className="p-4">
+                    {task.submissionLink ? (
+                      <div className="space-y-0.5">
+                        <span className="text-[10px] font-bold text-cyan-300 block">{task.submissionType}</span>
+                        <a
+                          href={task.submissionLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-cyan-400 hover:underline font-mono text-[11px] flex items-center gap-1"
+                        >
+                          <span>Review Link</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </div>
+                    ) : (
+                      <span className="text-[10px] text-slate-500 italic">No link submitted yet</span>
+                    )}
+                  </td>
+
                   <td className="p-4">
                     <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${
                       task.priority === 'Urgent' ? 'bg-rose-950 text-rose-300 border border-rose-800/40' :
@@ -126,7 +144,7 @@ export const TaskManagement = () => {
                         onClick={() => updateTaskStatus(task.id, 'Completed', 100)}
                         className="px-2.5 py-1 rounded bg-emerald-950 text-emerald-300 border border-emerald-800/40 font-bold text-[10px]"
                       >
-                        Complete
+                        Approve & Complete
                       </button>
                     )}
                   </td>
@@ -204,7 +222,6 @@ export const TaskManagement = () => {
                 <div className="space-y-2">
                   <label className="block text-xs font-medium text-slate-300">Select Team Members for Bulk Assignment:</label>
                   
-                  {/* Select Entire Team Shortcut */}
                   <div className="flex flex-wrap gap-1.5 pb-1">
                     {data.teams.map(t => (
                       <button
