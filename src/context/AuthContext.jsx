@@ -6,7 +6,6 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const { data, addToast } = useData();
 
-  // Authentication session state
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return localStorage.getItem('rise_is_authenticated') === 'true';
   });
@@ -24,17 +23,20 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('rise_is_authenticated', 'true');
   };
 
-  // Login authentication using unique PRN + Password
-  const loginWithPRN = (inputPRN, plainPassword) => {
-    const foundUser = data.users.find(u => u.prn?.toLowerCase() === inputPRN?.toLowerCase());
+  // Login authentication supporting unique PRN OR Email + Password
+  const loginWithPRN = (inputCredential, plainPassword) => {
+    const cred = inputCredential?.toLowerCase().trim();
+    const foundUser = data.users.find(u => 
+      u.prn?.toLowerCase() === cred || u.email?.toLowerCase() === cred
+    );
     
     if (!foundUser) {
-      addToast(`Error: No account found with PRN ${inputPRN}`, 'error');
-      return { success: false, message: `No account found with PRN ${inputPRN}` };
+      addToast(`Error: No member account found matching PRN/Email '${inputCredential}'`, 'error');
+      return { success: false, message: `No account found matching '${inputCredential}'` };
     }
 
     if (foundUser.status === 'Suspended' || foundUser.status === 'Removed') {
-      addToast(`Account for PRN ${inputPRN} is ${foundUser.status}. Access disabled.`, 'error');
+      addToast(`Account for ${foundUser.name} is ${foundUser.status}. Access disabled.`, 'error');
       return { success: false, message: `Account is ${foundUser.status}` };
     }
 
@@ -43,7 +45,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('rise_active_user_id', foundUser.id);
     localStorage.setItem('rise_is_authenticated', 'true');
 
-    addToast(`Welcome back, ${foundUser.name}! Logged in successfully.`, 'success');
+    addToast(`Welcome back, ${foundUser.name}! Logged in to your personal profile.`, 'success');
     return { success: true, user: foundUser };
   };
 
@@ -61,9 +63,9 @@ export const AuthProvider = ({ children }) => {
     isVicePresident: role === 'Vice President',
     isEqualLeadership: role === 'President' || role === 'Vice President',
     isStudentLead: ['Research Head', 'Secretary + Event Coordinator', 'Social Media & Publicity Head', 'Member Coordinator'].includes(role),
-    isMember: role === 'Research Club Member',
+    isMember: role === 'Research Club Member' || role === 'Club Member',
 
-    // Role-based functional capabilities
+    // Role-based functional capabilities (Admins only)
     canManageMembers: role === 'Faculty Coordinator' || role === 'President' || role === 'Vice President',
     canBulkCreateMembers: role === 'Faculty Coordinator' || role === 'President' || role === 'Vice President',
     canResetPasswords: role === 'Faculty Coordinator' || role === 'President' || role === 'Vice President',
