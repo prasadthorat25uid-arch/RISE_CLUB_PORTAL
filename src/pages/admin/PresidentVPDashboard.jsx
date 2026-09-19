@@ -46,11 +46,18 @@ export const PresidentVPDashboard = ({ setActiveTab }) => {
 
           <div className="flex items-center gap-2">
             <button
+              onClick={() => setActiveTab('manage-members')}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 shadow-lg transition-all"
+            >
+              <Users className="w-4 h-4" />
+              <span>Manage / Delete Profiles</span>
+            </button>
+            <button
               onClick={() => setActiveTab('create-members')}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 shadow-lg"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 shadow-lg transition-all"
             >
               <UserPlus className="w-4 h-4" />
-              <span>Create Multiple Members</span>
+              <span>Create Member Profiles</span>
             </button>
           </div>
         </div>
@@ -65,10 +72,10 @@ export const PresidentVPDashboard = ({ setActiveTab }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-slate-900/90 border border-amber-500/40 p-4 rounded-2xl flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=300&q=80" alt="President" className="w-10 h-10 rounded-full object-cover border border-amber-400" />
+              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80" alt="President" className="w-10 h-10 rounded-full object-cover border border-amber-400" />
               <div>
-                <div className="text-xs font-bold text-white">Rohan Sharma</div>
-                <div className="text-[10px] text-amber-400 font-semibold">President</div>
+                <div className="text-xs font-bold text-white">Ayushi Ahire</div>
+                <div className="text-[10px] text-amber-400 font-semibold">President (Equal Student Leader)</div>
               </div>
             </div>
             <span className="text-[10px] px-2 py-0.5 rounded font-bold bg-amber-950 text-amber-300 border border-amber-800">
@@ -78,10 +85,10 @@ export const PresidentVPDashboard = ({ setActiveTab }) => {
 
           <div className="bg-slate-900/90 border border-amber-500/40 p-4 rounded-2xl flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=300&q=80" alt="Vice President" className="w-10 h-10 rounded-full object-cover border border-amber-400" />
+              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80" alt="Vice President" className="w-10 h-10 rounded-full object-cover border border-amber-400" />
               <div>
-                <div className="text-xs font-bold text-white">Ananya Deshmukh</div>
-                <div className="text-[10px] text-amber-400 font-semibold">Vice President</div>
+                <div className="text-xs font-bold text-white">Prasad Thorat</div>
+                <div className="text-[10px] text-amber-400 font-semibold">Vice President (Equal Student Leader)</div>
               </div>
             </div>
             <span className="text-[10px] px-2 py-0.5 rounded font-bold bg-amber-950 text-amber-300 border border-amber-800">

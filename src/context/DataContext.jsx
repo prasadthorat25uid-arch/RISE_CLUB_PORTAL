@@ -339,6 +339,39 @@ export const DataProvider = ({ children }) => {
     return { success: true };
   };
 
+  const deleteMemberProfile = (memberId, actor = "Admin") => {
+    const targetUser = data.users.find(u => u.id === memberId);
+    if (!targetUser) return { success: false, message: "Member not found" };
+
+    if (targetUser.role === 'Faculty Coordinator') {
+      addToast('Cannot delete Faculty Coordinator account.', 'error');
+      return { success: false, message: "Cannot delete Faculty Coordinator account" };
+    }
+
+    setData(prev => ({
+      ...prev,
+      users: prev.users.filter(u => u.id !== memberId),
+      tasks: prev.tasks.map(t => {
+        if (t.assignedMemberId === memberId) {
+          return {
+            ...t,
+            assignedMemberId: '',
+            assignedTo: 'Unassigned',
+            status: 'Needs Assignment'
+          };
+        }
+        return t;
+      })
+    }));
+
+    addActivityLog('Member Profile Deleted', actor, `${targetUser.name} (${targetUser.memberId})`, `Member profile and authentication account permanently deleted.`);
+    addToast(`Member profile for ${targetUser.name} (${targetUser.prn}) permanently deleted.`, 'success');
+
+    supabase.from('users').delete().eq('id', memberId).then(() => {}).catch(() => {});
+
+    return { success: true };
+  };
+
   const updateMemberProfile = (memberId, updatedFields, actor = "User") => {
     setData(prev => ({
       ...prev,
@@ -566,6 +599,7 @@ export const DataProvider = ({ children }) => {
       resetMemberPassword,
       updateMemberStatus,
       removeMemberSafely,
+      deleteMemberProfile,
       updateMemberProfile,
       submitWorkLink,
       createTeam,

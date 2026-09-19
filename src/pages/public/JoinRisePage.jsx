@@ -69,6 +69,38 @@ export const JoinRisePage = ({ setActiveTab }) => {
         </p>
       </div>
 
+      {/* Official Onboarding Workflow */}
+      <div className="glass-panel p-5 rounded-2xl border border-amber-500/30 bg-slate-900/60 space-y-3">
+        <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider text-center">
+          Official Interview Selection & Account Provisioning Flow
+        </h4>
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center text-xs">
+          <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+            <span className="text-[10px] text-slate-400 block">Step 1</span>
+            <strong className="text-white">Student Application</strong>
+          </div>
+          <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+            <span className="text-[10px] text-amber-400 block">Step 2</span>
+            <strong className="text-white">Interview Screening</strong>
+          </div>
+          <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+            <span className="text-[10px] text-cyan-400 block">Step 3</span>
+            <strong className="text-white">Committee Selection</strong>
+          </div>
+          <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+            <span className="text-[10px] text-purple-400 block">Step 4</span>
+            <strong className="text-white">Profile Created *</strong>
+          </div>
+          <div className="bg-slate-950 p-2.5 rounded-xl border border-emerald-500/40">
+            <span className="text-[10px] text-emerald-400 block">Step 5</span>
+            <strong className="text-emerald-300">Private Login Account</strong>
+          </div>
+        </div>
+        <p className="text-[11px] text-center text-slate-400">
+          * Note: Member profiles & login accounts are provisioned exclusively by the <strong>Faculty Coordinator</strong>, <strong>President</strong>, and <strong>Vice President</strong>.
+        </p>
+      </div>
+
       <form onSubmit={handleSubmit} className="glass-panel p-8 rounded-3xl space-y-6 border border-slate-800">
         
         {/* Personal & Academic Info */}

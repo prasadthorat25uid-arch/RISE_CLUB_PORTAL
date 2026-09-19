@@ -65,8 +65,10 @@ export const AuthProvider = ({ children }) => {
     isStudentLead: ['Research Head', 'Secretary + Event Coordinator', 'Social Media & Publicity Head', 'Member Coordinator'].includes(role),
     isMember: role === 'Research Club Member' || role === 'Club Member',
 
-    // Role-based functional capabilities (Admins only)
+    // Role-based functional capabilities (Admins: Faculty Coordinator, President, Vice President)
     canManageMembers: role === 'Faculty Coordinator' || role === 'President' || role === 'Vice President',
+    canCreateMemberProfile: role === 'Faculty Coordinator' || role === 'President' || role === 'Vice President',
+    canDeleteMemberProfile: role === 'Faculty Coordinator' || role === 'President' || role === 'Vice President',
     canBulkCreateMembers: role === 'Faculty Coordinator' || role === 'President' || role === 'Vice President',
     canResetPasswords: role === 'Faculty Coordinator' || role === 'President' || role === 'Vice President',
     canCreateTeams: role === 'Faculty Coordinator' || role === 'President' || role === 'Vice President',

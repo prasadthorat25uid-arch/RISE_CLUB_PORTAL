@@ -5,7 +5,7 @@ import { UserPlus, Upload, FileText, CheckCircle2, AlertTriangle, Plus, Trash2, 
 
 export const CreateMultipleMembers = () => {
   const { data, createMember, createBulkMembers } = useData();
-  const { currentUser } = useAuth();
+  const { currentUser, permissions } = useAuth();
 
   const [creationMode, setCreationMode] = useState('optionB'); // 'optionA' or 'optionB'
 
@@ -124,6 +124,20 @@ export const CreateMultipleMembers = () => {
     const result = createBulkMembers(bulkRows, currentUser.name);
     setBulkSummaryResult(result);
   };
+
+  if (!permissions?.canCreateMemberProfile) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-16 text-center space-y-4">
+        <div className="w-16 h-16 rounded-3xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center mx-auto text-rose-400">
+          <ShieldCheck className="w-8 h-8" />
+        </div>
+        <h2 className="text-2xl font-bold text-white font-outfit">Access Restricted</h2>
+        <p className="text-sm text-slate-400 max-w-lg mx-auto">
+          Research Club Member profiles and authentication accounts can only be created by the <strong>Faculty Coordinator (Dr. Abhijit Kshirsagar)</strong>, <strong>President (Ayushi Ahire)</strong>, and <strong>Vice President (Prasad Thorat)</strong>.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-8">
